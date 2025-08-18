@@ -1,35 +1,42 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-
+import styled, { createGlobalStyle } from 'styled-components'
+import reset from 'styled-reset';
+import Header from './components/layout/header';
+import MenuBar from './components/layout/MenuBar';
+import MainLayout from './components/layout/MainLayout';
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <GlobalStyle />
+      <AppWrapper>
+        <Header />
+        <MainLayout />
+        <MenuBar />
+      </AppWrapper>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
+
+const GlobalStyle = createGlobalStyle`
+  ${reset}
+
+  body {
+    margin: 0;
+    background-color: #f0f2f5; /* 배경색을 주어 앱 영역을 구분 */
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+  }
+`;
+
+const AppWrapper = styled.div`
+  max-width: 480px; /* 앱 전체의 최대 너비를 480px로 제한 */
+  margin: 0 auto; /* 화면 중앙에 위치 */
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+`;
