@@ -1,19 +1,26 @@
 import { useState } from 'react'
 import styled, { createGlobalStyle } from 'styled-components'
 import reset from 'styled-reset';
-import Header from './components/layout/header';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Header from './components/layout/Header';
 import MenuBar from './components/layout/MenuBar';
 import MainLayout from './components/layout/MainLayout';
+import ExpertMainPage from './pages/ExpertMainPage';
+
 function App() {
   return (
-    <>
+    <Router>
       <GlobalStyle />
       <AppWrapper>
         <Header />
-        <MainLayout />
+        <MainLayout>
+          <Routes>
+            <Route path="/" element={<ExpertMainPage />} />
+          </Routes>
+        </MainLayout>
         <MenuBar />
       </AppWrapper>
-    </>
+    </Router>
   );
 }
 
@@ -24,16 +31,16 @@ const GlobalStyle = createGlobalStyle`
 
   body {
     margin: 0;
-    background-color: #f0f2f5; /* 배경색을 주어 앱 영역을 구분 */
+    background-color: #f0f2f5;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
       'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-      sans-serif;
+      'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
   }
 `;
 
 const AppWrapper = styled.div`
-  max-width: 480px; /* 앱 전체의 최대 너비를 480px로 제한 */
-  margin: 0 auto; /* 화면 중앙에 위치 */
+  max-width: 480px;
+  margin: 0 auto;
   background-color: #ffffff;
   display: flex;
   flex-direction: column;
