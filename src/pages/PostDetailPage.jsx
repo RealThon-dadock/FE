@@ -226,6 +226,8 @@ const CommentAuthor = styled.h4`
   font-size: 16px;
   font-weight: 600;
   color: #212529;
+  cursor: pointer;
+  &:hover { text-decoration: underline; }
 `;
 
 const CommentDate = styled.p`
@@ -363,7 +365,7 @@ const PostDetailPage = () => {
               </VerifiedBadge>
             </CommentProfileImage>
             <CommentContent>
-              <CommentAuthor>심리상담사 너구리</CommentAuthor>
+              <CommentAuthor onClick={() => navigate('/choose-expert')}>심리상담사 너구리</CommentAuthor>
               <CommentDate>{book.date} 22:06</CommentDate>
               <CommentText>
                 안녕하세요, 심리상담사 너구리입니다. 고양이님께서 심리적압박감이 심하셨군요... 이러한 조언을 드리며 저러한 조언을 드립니다. 더 자세한 상담도 도와드릴게요 :)
@@ -378,7 +380,7 @@ const PostDetailPage = () => {
               </VerifiedBadge>
             </CommentProfileImage>
             <CommentContent>
-              <CommentAuthor>심리상담사 너구리</CommentAuthor>
+              <CommentAuthor onClick={() => navigate('/choose-expert')}>심리상담사 너구리</CommentAuthor>
               <CommentDate>{book.date} 22:06</CommentDate>
               <CommentText>
                 안녕하세요, 심리상담사 너구리입니다. 고양이님께서 심리적압박감이 심하셨군요... 이러한 조언을 드리며 저러한 조언을 드립니다. 더 자세한 상담도 도와드릴게요 :)
