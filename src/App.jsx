@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import styled, { createGlobalStyle } from 'styled-components'
 import reset from 'styled-reset';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import MenuBar from './components/layout/MenuBar';
 import MainLayout from './components/layout/MainLayout';
 import Header from './components/layout/Header';
@@ -13,10 +13,12 @@ import ChatPage from './pages/ChatPage';
 import PostDetailPage from './pages/PostDetailPage';
 import KakaoLoginPage from './pages/KakaoLoginPage';
 import Redirect from './pages/Redirect';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import ProfileCreatePage from './pages/ProfileCreatePage';
 
 function AppContent() {
   const location = useLocation();
+  const { isLoggedIn, isLoading, profile, isProfileLoaded } = useAuth();
   
   const getHeaderTitle = () => {
     switch (location.pathname) {
@@ -30,6 +32,8 @@ function AppContent() {
         return '채팅';
       case '/my':
         return '마이페이지';
+      case '/profile-create':
+        return '프로필 생성';
       default:
         return '다독이다';
     }
@@ -48,6 +52,16 @@ function AppContent() {
           <Route path="/post/:bookId" element={<PostDetailPage />} />
           <Route path="/kakao-login" element={<KakaoLoginPage />} />
           <Route path="/redirect" element={<Redirect />} />
+          <Route
+            path="/profile-create"
+            element={
+              (isLoading || !isProfileLoaded)
+                ? null
+                : (!isLoggedIn)
+                  ? <Navigate to="/kakao-login" replace />
+                  : (profile ? <Navigate to="/my" replace /> : <ProfileCreatePage />)
+            }
+          />
         </Routes>
       </MainLayout>
       <MenuBar />

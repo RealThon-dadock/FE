@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { getMyProfile } from '../utils/profilesApi';
 
 const AuthContext = createContext();
 
@@ -14,6 +15,8 @@ export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [profile, setProfile] = useState(null);
+  const [isProfileLoaded, setIsProfileLoaded] = useState(false);
 
   // 초기 로그인 상태 확인
   useEffect(() => {
@@ -30,6 +33,31 @@ export const AuthProvider = ({ children }) => {
 
     checkLoginStatus();
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadProfile() {
+      if (!isLoggedIn) {
+        setProfile(null);
+        setIsProfileLoaded(true);
+        return;
+      }
+      setIsProfileLoaded(false);
+      try {
+        const result = await getMyProfile();
+        if (cancelled) return;
+        setProfile(result.exists ? result.data : null);
+      } catch (e) {
+        if (cancelled) return;
+        console.error('프로필 조회 실패:', e);
+        setProfile(null);
+      } finally {
+        if (!cancelled) setIsProfileLoaded(true);
+      }
+    }
+    loadProfile();
+    return () => { cancelled = true; };
+  }, [isLoggedIn]);
 
   // 카카오 로그인
   const login = async () => {
@@ -109,13 +137,27 @@ export const AuthProvider = ({ children }) => {
     setIsLoggedIn(Boolean(token && userInfo));
   };
 
+  const refreshProfile = async () => {
+    try {
+      setIsProfileLoaded(false);
+      const result = await getMyProfile();
+      setProfile(result.exists ? result.data : null);
+    } finally {
+      setIsProfileLoaded(true);
+    }
+  };
+
   const value = {
     isLoggedIn,
     user,
     isLoading,
+    profile,
+    isProfileLoaded,
     login,
     logout,
-    setAuthFromExternalLogin
+    setAuthFromExternalLogin,
+    setProfile,
+    refreshProfile
   };
 
   return (
