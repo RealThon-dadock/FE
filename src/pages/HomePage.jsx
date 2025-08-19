@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useRef } from 'react';
 import styled from 'styled-components';
 import { 
   Heart, 
@@ -35,6 +35,13 @@ const ScrollContainer = styled.div`
   overflow-x: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  &:active {
+    cursor: grabbing;
+  }
   
   &::-webkit-scrollbar {
     display: none;
@@ -104,20 +111,7 @@ const CardDescription = styled.p`
   line-height: 1.4;
 `;
 
-const DotIndicator = styled.div`
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 16px;
-`;
-
-const Dot = styled.div`
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: ${props => props.active ? '#007bff' : '#dee2e6'};
-  transition: background-color 0.2s ease;
-`;
+ 
 
 // 고민은 이제 저 멀리 섹션
 const WorrySection = styled.section`
@@ -193,8 +187,11 @@ const LikeCount = styled.span`
 `;
 
 const HomePage = () => {
-  const scrollRef = useRef(null);
-  const [activeDot, setActiveDot] = useState(0);
+  const containerRef = useRef(null);
+  const isDragging = useRef(false);
+  const dragStartX = useRef(0);
+  const dragStartScrollLeft = useRef(0);
+  const hasDragged = useRef(false);
 
   // 오늘의 완결 BOOK UP 데이터
   const todayBooks = [
@@ -256,16 +253,49 @@ const HomePage = () => {
     }
   ];
 
-  const handleScroll = (e) => {
-    const scrollLeft = e.target.scrollLeft;
-    const cardWidth = 280 + 16; // 카드 너비 + gap
-    const newActiveDot = Math.round(scrollLeft / cardWidth);
-    setActiveDot(newActiveDot);
+  const onMouseDown = (e) => {
+    isDragging.current = true;
+    dragStartX.current = e.pageX;
+    dragStartScrollLeft.current = containerRef.current ? containerRef.current.scrollLeft : 0;
+    hasDragged.current = false;
+  };
+
+  const onMouseMove = (e) => {
+    if (!isDragging.current || !containerRef.current) return;
+    e.preventDefault();
+    const deltaX = e.pageX - dragStartX.current;
+    containerRef.current.scrollLeft = dragStartScrollLeft.current - deltaX;
+    if (Math.abs(deltaX) > 5) hasDragged.current = true;
+  };
+
+  const endDrag = () => {
+    isDragging.current = false;
+  };
+
+  const onTouchStart = (e) => {
+    const touch = e.touches[0];
+    isDragging.current = true;
+    dragStartX.current = touch.pageX;
+    dragStartScrollLeft.current = containerRef.current ? containerRef.current.scrollLeft : 0;
+    hasDragged.current = false;
+  };
+
+  const onTouchMove = (e) => {
+    if (!isDragging.current || !containerRef.current) return;
+    const touch = e.touches[0];
+    const deltaX = touch.pageX - dragStartX.current;
+    containerRef.current.scrollLeft = dragStartScrollLeft.current - deltaX;
+    if (Math.abs(deltaX) > 5) hasDragged.current = true;
+  };
+
+  const onTouchEnd = () => {
+    isDragging.current = false;
   };
 
   const handleCardClick = (book) => {
+    if (hasDragged.current) return;
     console.log('카드 클릭:', book.title);
-    // 카드 상세 페이지로 이동하는 로직 추가
+    // 카드 상세 페이지로 이동하는 로직 추가 예정
   };
 
   return (
@@ -274,8 +304,17 @@ const HomePage = () => {
         {/* 오늘의 완결 BOOK UP 섹션 */}
         <TodaySection>
           <SectionTitle>오늘의 완결 BOOK UP!</SectionTitle>
-          <ScrollContainer>
-            <HorizontalCardList ref={scrollRef} onScroll={handleScroll}>
+          <ScrollContainer
+            ref={containerRef}
+            onMouseDown={onMouseDown}
+            onMouseMove={onMouseMove}
+            onMouseUp={endDrag}
+            onMouseLeave={endDrag}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+          >
+            <HorizontalCardList>
               {todayBooks.map((book) => (
                 <HorizontalCard key={book.id} onClick={() => handleCardClick(book)}>
                   <CardSpine color={book.color} />
@@ -289,11 +328,6 @@ const HomePage = () => {
               ))}
             </HorizontalCardList>
           </ScrollContainer>
-          <DotIndicator>
-            {todayBooks.map((_, index) => (
-              <Dot key={index} active={index === activeDot} />
-            ))}
-          </DotIndicator>
         </TodaySection>
 
         {/* 고민은 이제 저 멀리 섹션 */}

@@ -60,6 +60,8 @@ const MenuBarContainer = styled.nav`
   padding: 12px 0 20px 0;
   box-shadow: 0 -4px 20px rgba(37, 99, 235, 0.3);
   z-index: 1000;
+  font-family: 'Pretendard Variable', 'Pretendard', system-ui, sans-serif !important;
+  & * { font-family: inherit !important; }
 `;
 
 const MenuItem = styled.div`
@@ -94,6 +96,7 @@ const MenuLabel = styled.span`
   font-weight: ${props => props.$isActive ? '600' : '400'};
   color: ${props => props.$isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.7)'};
   transition: all 0.3s ease;
+  font-family: 'Pretendard Variable', 'Pretendard', system-ui, sans-serif !important;
 `;
 
 const NotificationBadge = styled.div`

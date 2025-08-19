@@ -69,14 +69,17 @@ function App() {
 export default App;
 
 const GlobalStyle = createGlobalStyle`
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css');
+
   ${reset}
 
   body {
     margin: 0;
     background-color: #f0f2f5;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
       'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-      'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
   }
 `;
 
