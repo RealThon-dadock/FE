@@ -2,25 +2,34 @@ import { useState } from 'react'
 import styled, { createGlobalStyle } from 'styled-components'
 import reset from 'styled-reset';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Header from './components/layout/Header';
 import MenuBar from './components/layout/MenuBar';
 import MainLayout from './components/layout/MainLayout';
-import ExpertMainPage from './pages/ExpertMainPage';
+import MyPage from './pages/MyPage';
+import BookshelfPage from './pages/BookshelfPage';
+import CreateBookPage from './pages/CreateBookPage';
+import HomePage from './pages/HomePage';
+import ChatPage from './pages/ChatPage';
+import { AuthProvider } from './contexts/AuthContext';
 
 function App() {
   return (
-    <Router>
-      <GlobalStyle />
-      <AppWrapper>
-        <Header />
-        <MainLayout>
-          <Routes>
-            <Route path="/" element={<ExpertMainPage />} />
-          </Routes>
-        </MainLayout>
-        <MenuBar />
-      </AppWrapper>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <GlobalStyle />
+        <AppWrapper>
+          <MainLayout>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/my" element={<MyPage />} />
+              <Route path="/bookshelf" element={<BookshelfPage />} />
+              <Route path="/chat" element={<ChatPage />} />
+              <Route path="/create-book" element={<CreateBookPage />} />
+            </Routes>
+          </MainLayout>
+          <MenuBar />
+        </AppWrapper>
+      </Router>
+    </AuthProvider>
   );
 }
 

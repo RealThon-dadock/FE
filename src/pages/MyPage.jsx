@@ -1,259 +1,204 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { User, Settings, Bell, Heart, Bookmark, HelpCircle, LogOut, ChevronRight } from 'lucide-react';
+import { 
+  User, 
+  ChevronRight
+} from 'lucide-react';
+import { getBookCounts, onBooksUpdate } from '../utils/bookData';
+import { useAuth } from '../contexts/AuthContext';
 
-const MyPage = () => {
-  const menuItems = [
-    { icon: Settings, title: '설정', subtitle: '앱 설정 및 개인정보' },
-    { icon: Bell, title: '알림', subtitle: '알림 설정' },
-    { icon: Heart, title: '관심 매물', subtitle: '저장한 매물 목록' },
-    { icon: Bookmark, title: '북마크', subtitle: '저장한 콘텐츠' },
-    { icon: HelpCircle, title: '고객센터', subtitle: '도움말 및 문의' },
-    { icon: LogOut, title: '로그아웃', subtitle: '계정에서 로그아웃' }
-  ];
-
-  return (
-    <MyContainer>
-      <Header>
-        <ProfileSection>
-          <ProfileAvatar>
-            <User size={32} color="#2563eb" />
-          </ProfileAvatar>
-          <ProfileInfo>
-            <ProfileName>김투자님</ProfileName>
-            <ProfileEmail>investor@example.com</ProfileEmail>
-            <ProfileLevel>프리미엄 회원</ProfileLevel>
-          </ProfileInfo>
-        </ProfileSection>
-      </Header>
-      
-      <StatsSection>
-        <StatCard>
-          <StatValue>15</StatValue>
-          <StatLabel>관심 매물</StatLabel>
-        </StatCard>
-        <StatCard>
-          <StatValue>8</StatValue>
-          <StatLabel>분석 완료</StatLabel>
-        </StatCard>
-        <StatCard>
-          <StatValue>3</StatValue>
-          <StatLabel>투자 성공</StatLabel>
-        </StatCard>
-      </StatsSection>
-      
-      <MenuSection>
-        <SectionTitle>메뉴</SectionTitle>
-        <MenuList>
-          {menuItems.map((item, index) => {
-            const Icon = item.icon;
-            return (
-              <MenuItem key={index}>
-                <MenuItemLeft>
-                  <MenuItemIcon>
-                    <Icon size={20} color="#64748b" />
-                  </MenuItemIcon>
-                  <MenuItemContent>
-                    <MenuItemTitle>{item.title}</MenuItemTitle>
-                    <MenuItemSubtitle>{item.subtitle}</MenuItemSubtitle>
-                  </MenuItemContent>
-                </MenuItemLeft>
-                <ChevronRight size={16} color="#94a3b8" />
-              </MenuItem>
-            );
-          })}
-        </MenuList>
-      </MenuSection>
-      
-      <AppInfo>
-        <AppVersion>리얼톤 v1.0.0</AppVersion>
-        <AppCopyright>© 2024 리얼톤. All rights reserved.</AppCopyright>
-      </AppInfo>
-    </MyContainer>
-  );
-};
-
-export default MyPage;
-
-const MyContainer = styled.div`
-  padding: 20px;
-  padding-bottom: 100px;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+const MyPageContainer = styled.div`
+  max-width: 480px;
+  margin: 0 auto;
+  background-color: #f8f9fa;
   min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 `;
 
-const Header = styled.div`
-  margin-bottom: 24px;
+const ProfileSection = styled.section`
+  background-color: white;
+  padding: 32px 20px;
+  text-align: center;
+  border-bottom: 1px solid #e9ecef;
+  margin-top: 20px;
 `;
 
-const ProfileSection = styled.div`
-  display: flex;
-  align-items: center;
-  background: white;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 8px 32px rgba(37, 99, 235, 0.2);
-  border: 1px solid rgba(37, 99, 235, 0.1);
-`;
-
-const ProfileAvatar = styled.div`
-  width: 64px;
-  height: 64px;
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+const ProfileImage = styled.div`
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
+  background-color: #dee2e6;
+  margin: 0 auto 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 16px;
-  border: 2px solid rgba(37, 99, 235, 0.2);
+  color: #6c757d;
+  font-size: 24px;
 `;
 
-const ProfileInfo = styled.div`
-  flex: 1;
-`;
-
-const ProfileName = styled.h2`
-  font-size: 20px;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 4px 0;
-`;
-
-const ProfileEmail = styled.p`
-  font-size: 14px;
-  color: #64748b;
+const UserName = styled.h2`
   margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #212529;
 `;
 
-const ProfileLevel = styled.span`
-  font-size: 12px;
-  background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-weight: 500;
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
-`;
-
-const StatsSection = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 24px;
-`;
-
-const StatCard = styled.div`
-  background: white;
-  border-radius: 16px;
-  padding: 16px;
-  text-align: center;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(37, 99, 235, 0.1);
-  transition: all 0.3s ease;
+const EditProfileButton = styled.button`
+  background: none;
+  border: 1px solid #dee2e6;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  color: #6c757d;
+  cursor: pointer;
   
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 32px rgba(37, 99, 235, 0.2);
-    border-color: rgba(37, 99, 235, 0.3);
+    background-color: #f8f9fa;
   }
 `;
 
-const StatValue = styled.div`
-  font-size: 24px;
-  font-weight: 700;
-  color: #2563eb;
+const StatsSection = styled.div`
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin-top: 24px;
+`;
+
+const StatItem = styled.div`
+  text-align: center;
+`;
+
+const StatNumber = styled.div`
+  font-size: 18px;
+  font-weight: 600;
+  color: #212529;
   margin-bottom: 4px;
 `;
 
 const StatLabel = styled.div`
-  font-size: 12px;
-  color: #64748b;
+  font-size: 14px;
+  color: #6c757d;
 `;
 
-const MenuSection = styled.div`
-  margin-bottom: 24px;
-`;
-
-const SectionTitle = styled.h3`
-  font-size: 18px;
-  font-weight: 600;
-  color: #1e293b;
-  margin-bottom: 16px;
-`;
-
-const MenuList = styled.div`
-  background: white;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(37, 99, 235, 0.1);
+const MenuSection = styled.section`
+  background-color: white;
+  margin-top: 16px;
 `;
 
 const MenuItem = styled.div`
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   padding: 16px 20px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f1f3f4;
   cursor: pointer;
-  transition: all 0.3s ease;
+  
+  &:hover {
+    background-color: #f8f9fa;
+  }
   
   &:last-child {
     border-bottom: none;
   }
-  
-  &:hover {
-    background: rgba(37, 99, 235, 0.05);
-    transform: translateX(4px);
-  }
 `;
 
-const MenuItemLeft = styled.div`
-  display: flex;
-  align-items: center;
-  flex: 1;
-`;
-
-const MenuItemIcon = styled.div`
-  width: 40px;
-  height: 40px;
-  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 12px;
-  border: 1px solid rgba(37, 99, 235, 0.1);
-`;
-
-const MenuItemContent = styled.div`
-  flex: 1;
-`;
-
-const MenuItemTitle = styled.div`
+const MenuText = styled.span`
   font-size: 16px;
-  font-weight: 500;
-  color: #1e293b;
-  margin-bottom: 2px;
+  color: #212529;
 `;
 
-const MenuItemSubtitle = styled.div`
-  font-size: 12px;
-  color: #64748b;
+const MenuIcon = styled.div`
+  color: #6c757d;
 `;
 
-const AppInfo = styled.div`
-  text-align: center;
-  padding: 20px;
+const ContentWrapper = styled.div`
+  padding-bottom: 80px;
 `;
 
-const AppVersion = styled.div`
-  font-size: 14px;
-  color: #64748b;
-  margin-bottom: 4px;
-`;
+const MyPage = () => {
+  const { isLoggedIn, user, logout } = useAuth();
+  const [writingCount, setWritingCount] = useState(0);
+  const [completedCount, setCompletedCount] = useState(0);
 
-const AppCopyright = styled.div`
-  font-size: 12px;
-  color: #94a3b8;
-`;
+  const menuItems = [
+    { id: 'notices', text: '공지사항', icon: <ChevronRight size={16} /> },
+    { id: 'account', text: '나의 계정', icon: <ChevronRight size={16} /> },
+    { id: 'inquiry', text: '나의 문의내역', icon: <ChevronRight size={16} /> },
+    { id: 'cache', text: '캐시 삭제', icon: <ChevronRight size={16} /> },
+    { id: 'service', text: '고객센터', icon: <ChevronRight size={16} /> },
+    ...(isLoggedIn ? [
+      { id: 'logout', text: '로그아웃', icon: <ChevronRight size={16} /> },
+      { id: 'withdraw', text: '회원 탈퇴', icon: <ChevronRight size={16} /> }
+    ] : [])
+  ];
+
+  // 책 수 데이터 로드
+  useEffect(() => {
+    const updateCounts = (counts) => {
+      setWritingCount(counts.writingCount);
+      setCompletedCount(counts.completedCount);
+    };
+
+    // 초기 데이터 로드
+    updateCounts(getBookCounts());
+
+    // 이벤트 리스너 등록
+    const cleanup = onBooksUpdate(updateCounts);
+
+    return cleanup;
+  }, []);
+
+  const handleMenuClick = (menuId) => {
+    console.log(`메뉴 클릭: ${menuId}`);
+    
+    if (menuId === 'logout') {
+      logout();
+    }
+    // 각 메뉴에 대한 처리 로직 추가
+  };
+
+  return (
+    <MyPageContainer>
+      <ContentWrapper>
+        <ProfileSection>
+          <ProfileImage>
+            <User size={32} />
+          </ProfileImage>
+          <UserName>{isLoggedIn ? (user?.nickname || '사용자') : '게스트'}</UserName>
+          {isLoggedIn && (
+            <EditProfileButton>
+              내 정보 수정
+            </EditProfileButton>
+          )}
+          
+          {isLoggedIn && (
+            <StatsSection>
+              <StatItem>
+                <StatNumber>{writingCount}권</StatNumber>
+                <StatLabel>작성중</StatLabel>
+              </StatItem>
+              <StatItem>
+                <StatNumber>{completedCount}권</StatNumber>
+                <StatLabel>완결</StatLabel>
+              </StatItem>
+            </StatsSection>
+          )}
+        </ProfileSection>
+
+        <MenuSection>
+          {menuItems.map((item) => (
+            <MenuItem 
+              key={item.id} 
+              onClick={() => handleMenuClick(item.id)}
+            >
+              <MenuText>{item.text}</MenuText>
+              <MenuIcon>{item.icon}</MenuIcon>
+            </MenuItem>
+          ))}
+        </MenuSection>
+      </ContentWrapper>
+    </MyPageContainer>
+  );
+};
+
+export default MyPage;
