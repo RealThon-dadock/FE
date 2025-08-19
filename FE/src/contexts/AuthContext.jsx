@@ -14,24 +14,17 @@ export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [userMode, setUserMode] = useState('general'); // 'general' 또는 'expert'
 
   // 초기 로그인 상태 확인
   useEffect(() => {
     const checkLoginStatus = () => {
       const token = localStorage.getItem('kakao_token');
       const userInfo = localStorage.getItem('kakao_user');
-      const savedUserMode = localStorage.getItem('userMode');
       
       if (token && userInfo) {
         setIsLoggedIn(true);
         setUser(JSON.parse(userInfo));
       }
-      
-      if (savedUserMode) {
-        setUserMode(savedUserMode);
-      }
-      
       setIsLoading(false);
     };
 
@@ -116,21 +109,13 @@ export const AuthProvider = ({ children }) => {
     setIsLoggedIn(Boolean(token && userInfo));
   };
 
-  // 사용자 모드 업데이트
-  const updateUserMode = (mode) => {
-    setUserMode(mode);
-    localStorage.setItem('userMode', mode);
-  };
-
   const value = {
     isLoggedIn,
     user,
-    userMode,
     isLoading,
     login,
     logout,
-    setAuthFromExternalLogin,
-    updateUserMode
+    setAuthFromExternalLogin
   };
 
   return (

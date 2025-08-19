@@ -4,7 +4,6 @@ import {
   User, 
   ChevronRight
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { getBookCounts, onBooksUpdate } from '../utils/bookData';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -117,7 +116,6 @@ const ContentWrapper = styled.div`
 `;
 
 const MyPage = () => {
-  const navigate = useNavigate();
   const { isLoggedIn, user, logout } = useAuth();
   const [writingCount, setWritingCount] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
@@ -169,19 +167,11 @@ const MyPage = () => {
       <ContentWrapper>
         <ProfileSection>
           <ProfileImage>
-            {isLoggedIn && user?.profileImage ? (
-              <img 
-                src={user.profileImage} 
-                alt="프로필" 
-                style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
-              />
-            ) : (
-              <User size={32} />
-            )}
+            <User size={32} />
           </ProfileImage>
           <UserName>{isLoggedIn ? (user?.nickname || '사용자') : '게스트'}</UserName>
           {isLoggedIn && (
-            <EditProfileButton onClick={() => navigate('/edit-profile')}>
+            <EditProfileButton>
               내 정보 수정
             </EditProfileButton>
           )}

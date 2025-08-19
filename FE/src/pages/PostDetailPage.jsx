@@ -201,12 +201,6 @@ const CommentProfileImage = styled.div`
   margin-right: 12px;
   flex-shrink: 0;
   position: relative;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-  
-  &:hover {
-    transform: scale(1.05);
-  }
 `;
 
 const VerifiedBadge = styled.div`
@@ -232,12 +226,6 @@ const CommentAuthor = styled.h4`
   font-size: 16px;
   font-weight: 600;
   color: #212529;
-  cursor: pointer;
-  transition: color 0.2s ease;
-  
-  &:hover {
-    color: #007bff;
-  }
 `;
 
 const CommentDate = styled.p`
@@ -310,17 +298,6 @@ const PostDetailPage = () => {
     setShowMenu(false);
   };
 
-  const handleExpertClick = (expertName) => {
-    const expert = {
-      name: expertName,
-      title: '전문 심리상담사',
-      rating: 4.8,
-      description: '10년 이상의 상담 경력을 바탕으로 다양한 심리적 고민에 대한 전문적인 상담을 제공합니다. 특히 직장 스트레스, 대인관계, 자신감 문제 등에 대한 해결책을 제시해드립니다.'
-    };
-    
-    navigate('/expert-selection', { state: { expert } });
-  };
-
   if (!book) {
     return (
       <PostDetailContainer>
@@ -379,39 +356,35 @@ const PostDetailPage = () => {
         <CommentsSection>
           <CommentsTitle>전문가들의 댓글 6</CommentsTitle>
           
-                           <CommentItem>
-                   <CommentProfileImage onClick={() => handleExpertClick('심리상담사 너구리')}>
-                     <VerifiedBadge>
-                       <Check size={10} color="white" />
-                     </VerifiedBadge>
-                   </CommentProfileImage>
-                   <CommentContent>
-                     <CommentAuthor onClick={() => handleExpertClick('심리상담사 너구리')}>
-                       심리상담사 너구리
-                     </CommentAuthor>
-                     <CommentDate>{book.date} 22:06</CommentDate>
-                     <CommentText>
-                       안녕하세요, 심리상담사 너구리입니다. 고양이님께서 심리적압박감이 심하셨군요... 이러한 조언을 드리며 저러한 조언을 드립니다. 더 자세한 상담도 도와드릴게요 :)
-                     </CommentText>
-                   </CommentContent>
-                 </CommentItem>
+          <CommentItem>
+            <CommentProfileImage>
+              <VerifiedBadge>
+                <Check size={10} color="white" />
+              </VerifiedBadge>
+            </CommentProfileImage>
+            <CommentContent>
+              <CommentAuthor>심리상담사 너구리</CommentAuthor>
+              <CommentDate>{book.date} 22:06</CommentDate>
+              <CommentText>
+                안녕하세요, 심리상담사 너구리입니다. 고양이님께서 심리적압박감이 심하셨군요... 이러한 조언을 드리며 저러한 조언을 드립니다. 더 자세한 상담도 도와드릴게요 :)
+              </CommentText>
+            </CommentContent>
+          </CommentItem>
 
-                 <CommentItem>
-                   <CommentProfileImage onClick={() => handleExpertClick('심리상담사 너구리')}>
-                     <VerifiedBadge>
-                       <Check size={10} color="white" />
-                     </VerifiedBadge>
-                   </CommentProfileImage>
-                   <CommentContent>
-                     <CommentAuthor onClick={() => handleExpertClick('심리상담사 너구리')}>
-                       심리상담사 너구리
-                     </CommentAuthor>
-                     <CommentDate>{book.date} 22:06</CommentDate>
-                     <CommentText>
-                       안녕하세요, 심리상담사 너구리입니다. 고양이님께서 심리적압박감이 심하셨군요... 이러한 조언을 드리며 저러한 조언을 드립니다. 더 자세한 상담도 도와드릴게요 :)
-                     </CommentText>
-                   </CommentContent>
-                 </CommentItem>
+          <CommentItem>
+            <CommentProfileImage>
+              <VerifiedBadge>
+                <Check size={10} color="white" />
+              </VerifiedBadge>
+            </CommentProfileImage>
+            <CommentContent>
+              <CommentAuthor>심리상담사 너구리</CommentAuthor>
+              <CommentDate>{book.date} 22:06</CommentDate>
+              <CommentText>
+                안녕하세요, 심리상담사 너구리입니다. 고양이님께서 심리적압박감이 심하셨군요... 이러한 조언을 드리며 저러한 조언을 드립니다. 더 자세한 상담도 도와드릴게요 :)
+              </CommentText>
+            </CommentContent>
+          </CommentItem>
         </CommentsSection>
       </ContentArea>
     </PostDetailContainer>

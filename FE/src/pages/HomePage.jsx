@@ -1,7 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import { Heart, Bookmark } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
 
 const HomeContainer = styled.div`
   max-width: 480px;
@@ -143,13 +141,6 @@ const BookCard = styled.div`
   }
 `;
 
-const BookmarkIcon = styled.div`
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  color: #6c757d;
-`;
-
 const BookContent = styled.div`
   margin-top: 8px;
 `;
@@ -173,25 +164,7 @@ const BookDate = styled.span`
   color: #adb5bd;
 `;
 
-const LikeSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 12px;
-`;
-
-const LikeIcon = styled.div`
-  color: #ff6b6b;
-`;
-
-const LikeCount = styled.span`
-  font-size: 12px;
-  color: #6c757d;
-  font-weight: 500;
-`;
-
 const HomePage = () => {
-  const { userMode } = useAuth();
   const scrollRef = useRef(null);
   const [activeDot, setActiveDot] = useState(0);
   const [displayedWorryBooks, setDisplayedWorryBooks] = useState([]);
@@ -200,26 +173,26 @@ const HomePage = () => {
   const todayBooks = [
     {
       id: 1,
-      title: '고냥이님의 고민',
+      title: '고양이님의 고민',
       subtitle: '회사 생활이 힘들어요',
-      date: '7.12 - 8.3',
-      description: '심리상담사 너구리님이 해결해주셨어요!',
+      date: '23. 8. 3',
+      description: '심리적 성찰로 너구리님이 해결해주셨어요!',
       color: '#4ECDC4'
     },
     {
       id: 2,
-      title: '고냥이님의 고민',
-      subtitle: '회사 생활이 힘들어요',
-      date: '7.12 - 8.3',
-      description: '심리상담사 너구리님이 해결해주셨어요!',
+      title: '강아지님의 고민',
+      subtitle: '대인관계가 어려워요',
+      date: '23. 8. 2',
+      description: '소통의 기술로 해결책을 찾았어요!',
       color: '#FF6B6B'
     },
     {
       id: 3,
-      title: '고냥이님의 고민',
-      subtitle: '회사 생활이 힘들어요',
-      date: '7.12 - 8.3',
-      description: '심리상담사 너구리님이 해결해주셨어요!',
+      title: '토끼님의 고민',
+      subtitle: '자신감이 부족해요',
+      date: '23. 8. 1',
+      description: '자기계발로 새로운 변화를 시작했어요!',
       color: '#45B7D1'
     }
   ];
@@ -228,51 +201,63 @@ const HomePage = () => {
   const allWorryBooks = [
     {
       id: 1,
-      title: '고냥이님의 고민',
+      title: '고양이님의 고민',
       subtitle: '회사 생활이 힘들어요',
-      date: '7.12 - 8.3',
-      likes: 123,
-      color: '#4ECDC4'
+      date: '23. 8. 3'
     },
     {
       id: 2,
-      title: '고냥이님의 고민',
-      subtitle: '회사 생활이 힘들어요',
-      date: '7.12 - 8.3',
-      likes: 123,
-      color: '#FF6B6B'
+      title: '강아지님의 고민',
+      subtitle: '대인관계가 어려워요',
+      date: '23. 8. 2'
     },
     {
       id: 3,
-      title: '고냥이님의 고민',
-      subtitle: '회사 생활이 힘들어요',
-      date: '7.12 - 8.3',
-      likes: 123,
-      color: '#45B7D1'
+      title: '토끼님의 고민',
+      subtitle: '자신감이 부족해요',
+      date: '23. 8. 1'
     },
     {
       id: 4,
-      title: '고냥이님의 고민',
-      subtitle: '회사 생활이 힘들어요',
-      date: '7.12 - 8.3',
-      likes: 123,
-      color: '#96CEB4'
+      title: '펭귄님의 고민',
+      subtitle: '스트레스 관리가 어려워요',
+      date: '23. 7. 30'
     },
     {
       id: 5,
-      title: '고냥이님의 고민',
-      subtitle: '회사 생활이 힘들어요',
-      date: '7.12 - 8.3',
-      likes: 123,
-      color: '#FFEAA7'
+      title: '사자님의 고민',
+      subtitle: '리더십 발휘가 어려워요',
+      date: '23. 7. 29'
     },
     {
       id: 6,
-      title: '고냥이님의 고민',
-      subtitle: '회사 생활이 힘들어요',
-      date: '7.12 - 8.3',
-      likes: 123,
-      color: '#DDA0DD'
+      title: '코알라님의 고민',
+      subtitle: '수면 패턴이 불규칙해요',
+      date: '23. 7. 28'
+    },
+    {
+      id: 7,
+      title: '기린님의 고민',
+      subtitle: '목이 길어서 불편해요',
+      date: '23. 7. 27'
+    },
+    {
+      id: 8,
+      title: '코뿔소님의 고민',
+      subtitle: '외모에 대한 스트레스가 있어요',
+      date: '23. 7. 26'
+    },
+    {
+      id: 9,
+      title: '하마님의 고민',
+      subtitle: '체중 관리가 어려워요',
+      date: '23. 7. 25'
+    },
+    {
+      id: 10,
+      title: '악어님의 고민',
+      subtitle: '감정 표현이 어려워요',
+      date: '23. 7. 24'
     }
   ];
 
@@ -287,15 +272,12 @@ const HomePage = () => {
     setDisplayedWorryBooks(getRandomBooks());
   }, []);
 
-  // 오늘의 완결 BOOK UP 스크롤 핸들러
-  const handleTodayScroll = (e) => {
+  const handleScroll = (e) => {
     const scrollLeft = e.target.scrollLeft;
     const cardWidth = 280 + 16; // 카드 너비 + gap
     const newActiveDot = Math.round(scrollLeft / cardWidth);
-    setActiveDot(Math.max(0, Math.min(newActiveDot, todayBooks.length - 1)));
+    setActiveDot(newActiveDot);
   };
-
-
 
   const handleCardClick = (book) => {
     console.log('카드 클릭:', book.title);
@@ -307,11 +289,9 @@ const HomePage = () => {
       <ContentArea>
         {/* 오늘의 완결 BOOK UP 섹션 */}
         <TodaySection>
-          <SectionTitle>
-            {userMode === 'expert' ? '오늘의 상담 완료!' : '오늘의 완결 BOOK UP!'}
-          </SectionTitle>
+          <SectionTitle>오늘의 완결 BOOK UP!</SectionTitle>
           <ScrollContainer>
-            <HorizontalCardList ref={scrollRef} onScroll={handleTodayScroll}>
+            <HorizontalCardList ref={scrollRef} onScroll={handleScroll}>
               {todayBooks.map((book) => (
                 <HorizontalCard key={book.id} onClick={() => handleCardClick(book)}>
                   <CardSpine color={book.color} />
@@ -319,12 +299,7 @@ const HomePage = () => {
                     <CardTitle>{book.title}</CardTitle>
                     <CardSubtitle>{book.subtitle}</CardSubtitle>
                     <CardDate>{book.date}</CardDate>
-                    <CardDescription>
-                      {userMode === 'expert' 
-                        ? '상담 완료! 고민이 해결되었어요!' 
-                        : book.description
-                      }
-                    </CardDescription>
+                    <CardDescription>{book.description}</CardDescription>
                   </CardContent>
                 </HorizontalCard>
               ))}
@@ -339,9 +314,7 @@ const HomePage = () => {
 
         {/* 고민은 이제 저 멀리 섹션 */}
         <WorrySection>
-          <SectionTitle>
-            {userMode === 'expert' ? '상담 대기 중인 고민들,' : '고민은 이제 저 멀리,'}
-          </SectionTitle>
+          <SectionTitle>고민은 이제 저 멀리,</SectionTitle>
           <BookGrid>
             {displayedWorryBooks.map((book) => (
               <BookCard key={book.id} onClick={() => handleCardClick(book)}>

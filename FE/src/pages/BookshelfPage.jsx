@@ -30,6 +30,7 @@ const TabContainer = styled.div`
   display: flex;
   background-color: white;
   border-bottom: 1px solid #e9ecef;
+  margin-top: 20px;
 `;
 
 const Tab = styled.button`

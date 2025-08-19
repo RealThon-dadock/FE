@@ -11,8 +11,6 @@ import CreateBookPage from './pages/CreateBookPage';
 import HomePage from './pages/HomePage';
 import ChatPage from './pages/ChatPage';
 import PostDetailPage from './pages/PostDetailPage';
-import EditProfilePage from './pages/EditProfilePage';
-import ExpertSelectionPage from './pages/ExpertSelectionPage';
 import KakaoLoginPage from './pages/KakaoLoginPage';
 import Redirect from './pages/Redirect';
 import { AuthProvider } from './contexts/AuthContext';
@@ -32,10 +30,6 @@ function AppContent() {
         return '채팅';
       case '/my':
         return '마이페이지';
-      case '/edit-profile':
-        return '내 정보 수정';
-      case '/expert-selection':
-        return '전문가 선택';
       default:
         return '다독이다';
     }
@@ -52,8 +46,6 @@ function AppContent() {
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/create-book" element={<CreateBookPage />} />
           <Route path="/post/:bookId" element={<PostDetailPage />} />
-          <Route path="/edit-profile" element={<EditProfilePage />} />
-          <Route path="/expert-selection" element={<ExpertSelectionPage />} />
           <Route path="/kakao-login" element={<KakaoLoginPage />} />
           <Route path="/redirect" element={<Redirect />} />
         </Routes>
