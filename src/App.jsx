@@ -15,6 +15,7 @@ import KakaoLoginPage from './pages/KakaoLoginPage';
 import Redirect from './pages/Redirect';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ProfileCreatePage from './pages/ProfileCreatePage';
+import ChooseExpert from './pages/ChooseExpert';
 
 function AppContent() {
   const location = useLocation();
@@ -34,6 +35,8 @@ function AppContent() {
         return '마이페이지';
       case '/profile-create':
         return '프로필 생성';
+      case '/choose-expert':
+        return '전문가 선택';
       default:
         return '다독이다';
     }
@@ -50,6 +53,7 @@ function AppContent() {
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/create-book" element={<CreateBookPage />} />
           <Route path="/post/:bookId" element={<PostDetailPage />} />
+          <Route path="/choose-expert" element={<ChooseExpert />} />
           <Route path="/kakao-login" element={<KakaoLoginPage />} />
           <Route path="/redirect" element={<Redirect />} />
           <Route
