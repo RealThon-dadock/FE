@@ -3,10 +3,18 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { 
   Plus,
-  Lock
+  Lock,
+  MoreVertical
 } from 'lucide-react';
 import bookImage from '../assets/image/book.png';
-import { getWritingBooks, getCompletedBooks, onBooksUpdate } from '../utils/bookData';
+import { 
+  getWritingBooks, 
+  getCompletedBooks, 
+  onBooksUpdate,
+  deleteWritingBook,
+  deleteCompletedBook,
+  moveToCompleted
+} from '../utils/bookData';
 import { useAuth } from '../contexts/AuthContext';
 import LoginRequired from '../components/LoginRequired';
 
@@ -145,6 +153,58 @@ const LockIcon = styled.div`
   z-index: 1;
 `;
 
+const MenuButton = styled.button`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  z-index: 2;
+  
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+`;
+
+const MenuDropdown = styled.div`
+  position: absolute;
+  top: 40px;
+  right: 8px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  min-width: 120px;
+  overflow: hidden;
+`;
+
+const MenuItem = styled.button`
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 14px;
+  color: #212529;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #f8f9fa;
+  }
+  
+  &:not(:last-child) {
+    border-bottom: 1px solid #e9ecef;
+  }
+`;
+
+
+
 const FloatingActionButton = styled.button`
   position: fixed;
   bottom: 100px;
@@ -193,6 +253,7 @@ const BookshelfPage = () => {
   const [activeTab, setActiveTab] = useState('writing');
   const [writingBooks, setWritingBooks] = useState([]);
   const [completedBooks, setCompletedBooks] = useState([]);
+  const [openMenuId, setOpenMenuId] = useState(null);
 
   // 책 데이터 로드
   useEffect(() => {
@@ -217,8 +278,40 @@ const BookshelfPage = () => {
   };
 
   const handleBookClick = (book) => {
-    console.log(`책 클릭: ${book.title}`);
-    // 책 상세 페이지로 이동하는 로직 추가
+    // 포스트 상세 페이지로 이동
+    navigate(`/post/${book.id}`);
+  };
+
+  const handleMenuClick = (e, bookId) => {
+    e.stopPropagation();
+    setOpenMenuId(openMenuId === bookId ? null : bookId);
+  };
+
+  const handleEditBook = (book) => {
+    setOpenMenuId(null);
+    navigate(`/create-book?edit=${book.id}`);
+  };
+
+  const handleDeleteBook = (book) => {
+    if (window.confirm('정말 삭제하시겠습니까?')) {
+      if (book.isWriting) {
+        deleteWritingBook(book.id);
+        setWritingBooks(getWritingBooks());
+      } else {
+        deleteCompletedBook(book.id);
+        setCompletedBooks(getCompletedBooks());
+      }
+      setOpenMenuId(null);
+    }
+  };
+
+  const handleCompleteBook = (book) => {
+    if (window.confirm('이 책을 완결하시겠습니까?')) {
+      moveToCompleted(book.id);
+      setWritingBooks(getWritingBooks());
+      setCompletedBooks(getCompletedBooks());
+      setOpenMenuId(null);
+    }
   };
 
   const handleAddBook = () => {
@@ -279,6 +372,24 @@ const BookshelfPage = () => {
                   <LockIcon>
                     <Lock size={16} />
                   </LockIcon>
+                )}
+                {book.isWriting && (
+                  <MenuButton onClick={(e) => handleMenuClick(e, book.id)}>
+                    <MoreVertical size={16} />
+                  </MenuButton>
+                )}
+                {openMenuId === book.id && book.isWriting && (
+                  <MenuDropdown>
+                    <MenuItem onClick={() => handleEditBook(book)}>
+                      수정하기
+                    </MenuItem>
+                    <MenuItem onClick={() => handleCompleteBook(book)}>
+                      완결하기
+                    </MenuItem>
+                    <MenuItem onClick={() => handleDeleteBook(book)}>
+                      삭제하기
+                    </MenuItem>
+                  </MenuDropdown>
                 )}
               </BookCard>
             ))}

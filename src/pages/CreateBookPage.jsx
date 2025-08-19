@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { Clock } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { addCompletedBook } from '../utils/bookData';
+import { 
+  addCompletedBook, 
+  addWritingBook, 
+  updateWritingBook,
+  deleteWritingBook,
+  updateCompletedBook
+} from '../utils/bookData';
 import { useAuth } from '../contexts/AuthContext';
 import LoginRequired from '../components/LoginRequired';
 
@@ -14,10 +20,28 @@ const CreateBookContainer = styled.div`
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 `;
 
+const BackButton = styled.button`
+  background: none;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6B7280;
+  transition: all 0.2s ease;
+  margin-bottom: 16px;
+  
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+`;
+
 const ContentArea = styled.div`
   padding: 20px;
   padding-bottom: 100px;
-  padding-top: 40px;
+  padding-top: 20px;
 `;
 
 const InputSection = styled.div`
@@ -94,7 +118,7 @@ const ColorLabel = styled.label`
 
 const ColorGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 12px;
 `;
 
@@ -136,6 +160,71 @@ const SubmitButton = styled.button`
   }
 `;
 
+const DialogOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+const Dialog = styled.div`
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin: 20px;
+  max-width: 320px;
+  width: 100%;
+  text-align: center;
+`;
+
+const DialogTitle = styled.h3`
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #212529;
+`;
+
+const DialogButtons = styled.div`
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+`;
+
+const DialogButton = styled.button`
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &.primary {
+    background-color: #007bff;
+    color: white;
+    
+    &:hover {
+      background-color: #0056b3;
+    }
+  }
+  
+  &.secondary {
+    background-color: #6c757d;
+    color: white;
+    
+    &:hover {
+      background-color: #545b62;
+    }
+  }
+`;
+
 const CreateBookPage = () => {
   const navigate = useNavigate();
   const { isLoggedIn, isLoading } = useAuth();
@@ -143,11 +232,10 @@ const CreateBookPage = () => {
   const [bookTitle, setBookTitle] = useState('');
   const [bookContent, setBookContent] = useState('');
   const [selectedColor, setSelectedColor] = useState('#FF6B6B');
+  const [showExitDialog, setShowExitDialog] = useState(false);
+  const [editingBookId, setEditingBookId] = useState(null);
 
-  const colors = [
-    '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD',
-    '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9', '#F8C471', '#82E0AA'
-  ];
+  const colors = ['#FF6B6B', '#FFD93D', '#4ECDC4']; // 빨강, 노랑, 파랑만
 
   useEffect(() => {
     const updateTime = () => {
@@ -166,8 +254,69 @@ const CreateBookPage = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // URL 파라미터에서 편집할 책 ID 확인
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookId = urlParams.get('edit');
+    if (bookId) {
+      setEditingBookId(parseInt(bookId));
+      // 기존 책 데이터 로드
+      const writingBooks = JSON.parse(localStorage.getItem('writingBooks') || '[]');
+      const completedBooks = JSON.parse(localStorage.getItem('completedBooks') || '[]');
+      const allBooks = [...writingBooks, ...completedBooks];
+      const bookToEdit = allBooks.find(book => book.id === parseInt(bookId));
+      
+      if (bookToEdit) {
+        setBookTitle(bookToEdit.title || '');
+        setBookContent(bookToEdit.content || '');
+        setSelectedColor(bookToEdit.color || '#FF6B6B');
+      }
+    }
+  }, []);
+
   const handleBack = () => {
+    // 내용이 입력되어 있으면 다이얼로그 표시
+    if (bookTitle.trim() || bookContent.trim()) {
+      setShowExitDialog(true);
+    } else {
+      navigate('/bookshelf');
+    }
+  };
+
+  const handleExit = () => {
+    setShowExitDialog(false);
     navigate('/bookshelf');
+  };
+
+  const handleSaveDraft = () => {
+    if (editingBookId) {
+      // 기존 책 업데이트
+      updateWritingBook(editingBookId, {
+        title: bookTitle,
+        content: bookContent,
+        color: selectedColor,
+        lastModified: Date.now()
+      });
+    } else {
+      // 새 책을 작성중인 책으로 추가
+      const newBook = {
+        title: bookTitle,
+        content: bookContent,
+        color: selectedColor,
+        date: new Date().toLocaleDateString('ko-KR', {
+          month: '2-digit',
+          day: '2-digit'
+        }),
+        lastModified: Date.now()
+      };
+      addWritingBook(newBook);
+    }
+    setShowExitDialog(false);
+    navigate('/bookshelf');
+  };
+
+  const handleCancelDialog = () => {
+    setShowExitDialog(false);
   };
 
   const handleSubmit = () => {
@@ -176,24 +325,60 @@ const CreateBookPage = () => {
       return;
     }
 
-    // 새 책 데이터 생성
-    const newBook = {
-      id: Date.now(), // 임시 ID 생성
-      title: bookTitle,
-      content: bookContent,
-      color: selectedColor,
-      date: new Date().toLocaleDateString('ko-KR', {
-        month: '2-digit',
-        day: '2-digit'
-      }),
-      isLocked: false,
-      isCompleted: true
-    };
+    if (editingBookId) {
+      // 기존 책이 작성중인 책인지 완결된 책인지 확인
+      const writingBooks = JSON.parse(localStorage.getItem('writingBooks') || '[]');
+      const completedBooks = JSON.parse(localStorage.getItem('completedBooks') || '[]');
+      
+      const bookToEdit = writingBooks.find(book => book.id === editingBookId) || 
+                        completedBooks.find(book => book.id === editingBookId);
+      
+      if (bookToEdit) {
+        const updatedBook = {
+          ...bookToEdit,
+          title: bookTitle,
+          content: bookContent,
+          color: selectedColor,
+          lastModified: Date.now()
+        };
 
-    // 새 책 추가 (유틸리티 함수 사용)
-    addCompletedBook(newBook);
+        if (bookToEdit.isWriting) {
+          // 작성중인 책 업데이트
+          updateWritingBook(editingBookId, {
+            title: bookTitle,
+            content: bookContent,
+            color: selectedColor,
+            lastModified: Date.now()
+          });
+        } else {
+          // 완결된 책 업데이트
+          updateCompletedBook(editingBookId, {
+            title: bookTitle,
+            content: bookContent,
+            color: selectedColor,
+            lastModified: Date.now()
+          });
+        }
+      }
+    } else {
+      // 새 책 데이터 생성
+      const newBook = {
+        title: bookTitle,
+        content: bookContent,
+        color: selectedColor,
+        date: new Date().toLocaleDateString('ko-KR', {
+          month: '2-digit',
+          day: '2-digit'
+        }),
+        isLocked: false,
+        isCompleted: true
+      };
 
-    console.log('새 책이 생성되었습니다:', newBook);
+      // 새 책 추가 (유틸리티 함수 사용)
+      addCompletedBook(newBook);
+    }
+
+    console.log('책이 완결되었습니다.');
     
     // 책장 페이지로 이동
     navigate('/bookshelf');
@@ -223,6 +408,10 @@ const CreateBookPage = () => {
 
   return (
     <CreateBookContainer>
+      <BackButton onClick={handleBack}>
+        <ArrowLeft size={24} />
+      </BackButton>
+      
       <ContentArea>
         <InputSection>
           <InputLabel>책 제목</InputLabel>
@@ -265,6 +454,22 @@ const CreateBookPage = () => {
           완결하기
         </SubmitButton>
       </ContentArea>
+
+      {showExitDialog && (
+        <DialogOverlay onClick={handleCancelDialog}>
+          <Dialog onClick={(e) => e.stopPropagation()}>
+            <DialogTitle>정말 나갈까요?</DialogTitle>
+            <DialogButtons>
+              <DialogButton className="secondary" onClick={handleSaveDraft}>
+                임시저장
+              </DialogButton>
+              <DialogButton className="primary" onClick={handleExit}>
+                나가기
+              </DialogButton>
+            </DialogButtons>
+          </Dialog>
+        </DialogOverlay>
+      )}
     </CreateBookContainer>
   );
 };

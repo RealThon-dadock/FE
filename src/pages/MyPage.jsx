@@ -120,16 +120,18 @@ const MyPage = () => {
   const [writingCount, setWritingCount] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
 
-  const menuItems = [
+  const menuItems = isLoggedIn ? [
     { id: 'notices', text: '공지사항', icon: <ChevronRight size={16} /> },
     { id: 'account', text: '나의 계정', icon: <ChevronRight size={16} /> },
     { id: 'inquiry', text: '나의 문의내역', icon: <ChevronRight size={16} /> },
     { id: 'cache', text: '캐시 삭제', icon: <ChevronRight size={16} /> },
     { id: 'service', text: '고객센터', icon: <ChevronRight size={16} /> },
-    ...(isLoggedIn ? [
-      { id: 'logout', text: '로그아웃', icon: <ChevronRight size={16} /> },
-      { id: 'withdraw', text: '회원 탈퇴', icon: <ChevronRight size={16} /> }
-    ] : [])
+    { id: 'logout', text: '로그아웃', icon: <ChevronRight size={16} /> },
+    { id: 'withdraw', text: '회원 탈퇴', icon: <ChevronRight size={16} /> }
+  ] : [
+    { id: 'notices', text: '공지사항', icon: <ChevronRight size={16} /> },
+    { id: 'service', text: '고객센터', icon: <ChevronRight size={16} /> },
+    { id: 'login', text: '로그인', icon: <ChevronRight size={16} /> }
   ];
 
   // 책 수 데이터 로드
@@ -153,6 +155,9 @@ const MyPage = () => {
     
     if (menuId === 'logout') {
       logout();
+    } else if (menuId === 'login') {
+      // 로그인 페이지로 이동하는 로직 추가
+      window.location.href = '/login';
     }
     // 각 메뉴에 대한 처리 로직 추가
   };

@@ -2,7 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { Menu, Bell } from 'lucide-react';
 
-const Header = () => {
+const Header = ({ title = '다독이다' }) => {
   return (
     <HeaderContainer>
       <LeftSection>
@@ -12,7 +12,7 @@ const Header = () => {
       </LeftSection>
       
       <CenterSection>
-        <Title>다독이다</Title>
+        <Title>{title}</Title>
       </CenterSection>
       
       <RightSection>
