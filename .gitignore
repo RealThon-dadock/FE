@@ -1,0 +1,50 @@
+# Node dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+.vite/
+.cache/
+.temp/
+.tmp/
+
+# Testing/coverage
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment files
+.env
+.env.*
+!.env.sample
+
+# Editor/OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Package managers (keep yarn.lock tracked, ignore others if created accidentally)
+package-lock.json
+pnpm-lock.yaml
+
+# Hosting/platform specific
+.netlify/
+.vercel/
+
+# Cypress artifacts
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
+
+# Misc
+*.local
+
