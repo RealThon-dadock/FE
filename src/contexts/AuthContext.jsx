@@ -97,12 +97,25 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // 리다이렉트 기반 외부 로그인(카카오) 완료 시 컨텍스트 갱신용
+  const setAuthFromExternalLogin = (token, userInfo) => {
+    if (token) {
+      localStorage.setItem('kakao_token', token);
+    }
+    if (userInfo) {
+      localStorage.setItem('kakao_user', JSON.stringify(userInfo));
+      setUser(userInfo);
+    }
+    setIsLoggedIn(Boolean(token && userInfo));
+  };
+
   const value = {
     isLoggedIn,
     user,
     isLoading,
     login,
-    logout
+    logout,
+    setAuthFromExternalLogin
   };
 
   return (

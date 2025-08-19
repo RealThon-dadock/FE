@@ -11,6 +11,8 @@ import CreateBookPage from './pages/CreateBookPage';
 import HomePage from './pages/HomePage';
 import ChatPage from './pages/ChatPage';
 import PostDetailPage from './pages/PostDetailPage';
+import KakaoLoginPage from './pages/KakaoLoginPage';
+import Redirect from './pages/Redirect';
 import { AuthProvider } from './contexts/AuthContext';
 
 function AppContent() {
@@ -44,6 +46,8 @@ function AppContent() {
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/create-book" element={<CreateBookPage />} />
           <Route path="/post/:bookId" element={<PostDetailPage />} />
+          <Route path="/kakao-login" element={<KakaoLoginPage />} />
+          <Route path="/redirect" element={<Redirect />} />
         </Routes>
       </MainLayout>
       <MenuBar />
