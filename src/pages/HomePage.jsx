@@ -1,9 +1,5 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
-import { 
-  Heart, 
-  Bookmark
-} from 'lucide-react';
 
 const HomeContainer = styled.div`
   max-width: 480px;
@@ -145,13 +141,6 @@ const BookCard = styled.div`
   }
 `;
 
-const BookmarkIcon = styled.div`
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  color: #6c757d;
-`;
-
 const BookContent = styled.div`
   margin-top: 8px;
 `;
@@ -175,26 +164,10 @@ const BookDate = styled.span`
   color: #adb5bd;
 `;
 
-const LikeSection = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 12px;
-`;
-
-const LikeIcon = styled.div`
-  color: #ff6b6b;
-`;
-
-const LikeCount = styled.span`
-  font-size: 12px;
-  color: #6c757d;
-  font-weight: 500;
-`;
-
 const HomePage = () => {
   const scrollRef = useRef(null);
   const [activeDot, setActiveDot] = useState(0);
+  const [displayedWorryBooks, setDisplayedWorryBooks] = useState([]);
 
   // 오늘의 완결 BOOK UP 데이터
   const todayBooks = [
@@ -224,37 +197,80 @@ const HomePage = () => {
     }
   ];
 
-  // 고민은 이제 저 멀리 데이터
-  const worryBooks = [
+  // 고민은 이제 저 멀리 데이터 (더 많은 책들)
+  const allWorryBooks = [
     {
       id: 1,
       title: '고양이님의 고민',
       subtitle: '회사 생활이 힘들어요',
-      date: '23. 8. 3',
-      likes: 103
+      date: '23. 8. 3'
     },
     {
       id: 2,
       title: '강아지님의 고민',
       subtitle: '대인관계가 어려워요',
-      date: '23. 8. 2',
-      likes: 125
+      date: '23. 8. 2'
     },
     {
       id: 3,
       title: '토끼님의 고민',
       subtitle: '자신감이 부족해요',
-      date: '23. 8. 1',
-      likes: 89
+      date: '23. 8. 1'
     },
     {
       id: 4,
       title: '펭귄님의 고민',
       subtitle: '스트레스 관리가 어려워요',
-      date: '23. 7. 30',
-      likes: 156
+      date: '23. 7. 30'
+    },
+    {
+      id: 5,
+      title: '사자님의 고민',
+      subtitle: '리더십 발휘가 어려워요',
+      date: '23. 7. 29'
+    },
+    {
+      id: 6,
+      title: '코알라님의 고민',
+      subtitle: '수면 패턴이 불규칙해요',
+      date: '23. 7. 28'
+    },
+    {
+      id: 7,
+      title: '기린님의 고민',
+      subtitle: '목이 길어서 불편해요',
+      date: '23. 7. 27'
+    },
+    {
+      id: 8,
+      title: '코뿔소님의 고민',
+      subtitle: '외모에 대한 스트레스가 있어요',
+      date: '23. 7. 26'
+    },
+    {
+      id: 9,
+      title: '하마님의 고민',
+      subtitle: '체중 관리가 어려워요',
+      date: '23. 7. 25'
+    },
+    {
+      id: 10,
+      title: '악어님의 고민',
+      subtitle: '감정 표현이 어려워요',
+      date: '23. 7. 24'
     }
   ];
+
+  // 랜덤으로 4개의 책을 선택하는 함수
+  const getRandomBooks = () => {
+    const shuffled = [...allWorryBooks].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 4);
+  };
+
+  // 컴포넌트 마운트 시 랜덤 책들 설정
+  useEffect(() => {
+    setDisplayedWorryBooks(getRandomBooks());
+  }, []);
 
   const handleScroll = (e) => {
     const scrollLeft = e.target.scrollLeft;
@@ -300,21 +316,12 @@ const HomePage = () => {
         <WorrySection>
           <SectionTitle>고민은 이제 저 멀리,</SectionTitle>
           <BookGrid>
-            {worryBooks.map((book) => (
+            {displayedWorryBooks.map((book) => (
               <BookCard key={book.id} onClick={() => handleCardClick(book)}>
-                <BookmarkIcon>
-                  <Bookmark size={16} />
-                </BookmarkIcon>
                 <BookContent>
                   <BookTitle>{book.title}</BookTitle>
                   <BookSubtitle>{book.subtitle}</BookSubtitle>
                   <BookDate>{book.date}</BookDate>
-                  <LikeSection>
-                    <LikeIcon>
-                      <Heart size={12} fill="#ff6b6b" />
-                    </LikeIcon>
-                    <LikeCount>{book.likes}</LikeCount>
-                  </LikeSection>
                 </BookContent>
               </BookCard>
             ))}
