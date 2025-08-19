@@ -51,6 +51,7 @@ function AppContent() {
           <Route path="/my" element={<MyPage />} />
           <Route path="/bookshelf" element={<BookshelfPage />} />
           <Route path="/chat" element={<ChatPage />} />
+          <Route path="/chatting" element={<ChatPage />} />
           <Route path="/create-book" element={<CreateBookPage />} />
           <Route path="/post/:bookId" element={<PostDetailPage />} />
           <Route path="/choose-expert" element={<ChooseExpert />} />

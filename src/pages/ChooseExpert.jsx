@@ -118,7 +118,7 @@ const ChooseExpert = () => {
             </ul>
           </Card>
 
-          <StartButton>상담 시작</StartButton>
+          <StartButton onClick={() => navigate('/chatting')}>상담 시작</StartButton>
         </ProfileWrap>
       </Content>
     </Page>
