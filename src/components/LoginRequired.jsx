@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const LoginRequiredContainer = styled.div`
   display: flex;
@@ -55,14 +55,14 @@ const LoginButton = styled.button`
 `;
 
 const LoginRequired = ({ title = "로그인이 필요합니다", message = "로그인 후 사용해 주세요!" }) => {
-  const { login } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <LoginRequiredContainer>
       <LoginIcon>🔐</LoginIcon>
       <LoginTitle>{title}</LoginTitle>
       <LoginMessage>{message}</LoginMessage>
-      <LoginButton onClick={login}>
+      <LoginButton onClick={() => navigate('/kakao-login')}>
         카카오로 로그인하기
       </LoginButton>
     </LoginRequiredContainer>
