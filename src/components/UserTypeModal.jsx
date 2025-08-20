@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { createMyProfile } from '../utils/profilesApi';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Overlay = styled.div`
   position: fixed;
@@ -72,6 +73,7 @@ const Button = styled.button`
 
 const UserTypeModal = ({ isOpen, onClose }) => {
   const { refreshProfile } = useAuth();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = React.useState(false);
 
   const handleUserTypeSelect = async (role) => {
@@ -80,6 +82,13 @@ const UserTypeModal = ({ isOpen, onClose }) => {
       await createMyProfile({ role });
       await refreshProfile();
       onClose();
+      
+      // Navigate based on user type
+      if (role === 'user') {
+        navigate('/', { replace: true });
+      } else if (role === 'expert') {
+        navigate('/expert', { replace: true });
+      }
     } catch (err) {
       alert(err?.message || '사용자 유형 설정에 실패했습니다.');
     } finally {
