@@ -44,6 +44,13 @@ api.interceptors.response.use(
 );
 
 export async function apiFetch(path, { method = 'GET', query, body, headers } = {}) {
+  // If no API_BASE_URL is configured, throw a specific error for fallback handling
+  if (!API_BASE_URL) {
+    const error = new Error('Backend not configured');
+    error.status = 'NO_BACKEND';
+    throw error;
+  }
+  
   const res = await api.request({ url: path, method, params: query, data: body, headers });
   return res.data;
 }
