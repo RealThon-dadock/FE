@@ -38,7 +38,7 @@ function AppContent() {
       case '/choose-expert':
         return '전문가 선택';
       case '/expert':
-        return '전문가 메인';
+        return '다독이다';
       default:
         return '다독이다';
     }

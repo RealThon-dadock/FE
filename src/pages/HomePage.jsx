@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 import MainPageImg from '../assets/image/MainPageImg.png';
 
 const HomeContainer = styled.div`
@@ -177,10 +178,100 @@ const BookDate = styled.span`
   color: #adb5bd;
 `;
 
+// 책 상세 모달 스타일
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+`;
+
+const ModalContent = styled.div`
+  background-color: white;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 400px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+`;
+
+const ModalCloseButton = styled.button`
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6c757d;
+  padding: 4px;
+  border-radius: 4px;
+  
+  &:hover {
+    background-color: #f8f9fa;
+  }
+`;
+
+const ModalBookSpine = styled.div`
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  background: linear-gradient(180deg, ${props => props.color || '#4ECDC4'} 0%, ${props => props.color || '#4ECDC4'}80 100%);
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
+`;
+
+const ModalBookContent = styled.div`
+  margin-left: 16px;
+`;
+
+const ModalBookTitle = styled.h2`
+  font-size: 20px;
+  font-weight: 700;
+  color: #212529;
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+`;
+
+const ModalBookSubtitle = styled.p`
+  font-size: 16px;
+  color: #6c757d;
+  margin: 0 0 12px 0;
+`;
+
+const ModalBookDate = styled.span`
+  font-size: 14px;
+  color: #adb5bd;
+  margin-bottom: 20px;
+  display: block;
+`;
+
+const ModalBookText = styled.p`
+  font-size: 16px;
+  line-height: 1.6;
+  color: #495057;
+  margin: 0;
+  white-space: pre-line;
+`;
+
 const HomePage = () => {
+  const navigate = useNavigate();
   const scrollRef = useRef(null);
   const [activeDot, setActiveDot] = useState(0);
   const [displayedWorryBooks, setDisplayedWorryBooks] = useState([]);
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [showBookModal, setShowBookModal] = useState(false);
 
   // 오늘의 완결 BOOK UP 데이터
   const todayBooks = [
@@ -190,7 +281,8 @@ const HomePage = () => {
       subtitle: '회사 생활이 힘들어요',
       date: '23. 8. 3',
       description: '심리적 성찰로 너구리님이 해결해주셨어요!',
-      color: '#4ECDC4'
+      color: '#4ECDC4',
+      content: '안녕하세요, 고양이입니다. 요즘 회사에서 일이 너무 많아서 스트레스가 심해요. 특히 상사님께서 항상 까다롭게 구시고, 동료들과도 소통이 잘 안 돼요. 매일 밤늦게까지 일하고 집에 가면 너무 지쳐서 아무것도 할 수 없어요. 이런 상황을 어떻게 해결해야 할지 모르겠어요. 너구리님께서 조언해주셔서 정말 감사합니다. 이제 조금씩 여유를 가지고 일할 수 있게 되었어요.'
     },
     {
       id: 2,
@@ -198,7 +290,8 @@ const HomePage = () => {
       subtitle: '대인관계가 어려워요',
       date: '23. 8. 2',
       description: '소통의 기술로 해결책을 찾았어요!',
-      color: '#FF6B6B'
+      color: '#FF6B6B',
+      content: '안녕하세요, 강아지입니다. 저는 사람들과 대화할 때 항상 긴장하고 어색해요. 특히 처음 만나는 사람 앞에서는 말을 제대로 못하고, 대화가 자연스럽게 이어지지 않아요. 친구들도 제가 너무 수줍어한다고 하는데, 어떻게 하면 더 자연스럽게 대화할 수 있을까요? 너구리님의 조언 덕분에 이제 조금씩 자신감을 가지고 대화할 수 있게 되었어요.'
     },
     {
       id: 3,
@@ -206,7 +299,8 @@ const HomePage = () => {
       subtitle: '자신감이 부족해요',
       date: '23. 8. 1',
       description: '자기계발로 새로운 변화를 시작했어요!',
-      color: '#45B7D1'
+      color: '#45B7D1',
+      content: '안녕하세요, 토끼입니다. 저는 항상 자신이 없어요. 뭔가를 해도 잘할 수 있을까 하는 생각이 먼저 들고, 실패할까봐 두려워서 도전을 못해요. 특히 중요한 일이나 새로운 일을 할 때는 더욱 그렇습니다. 어떻게 하면 자신감을 가질 수 있을까요? 너구리님의 도움으로 이제 조금씩 자신감을 찾고 있어요. 새로운 것에 도전하는 용기도 생겼어요.'
     }
   ];
 
@@ -216,61 +310,71 @@ const HomePage = () => {
       id: 1,
       title: '고양이님의 고민',
       subtitle: '회사 생활이 힘들어요',
-      date: '23. 8. 3'
+      date: '23. 8. 3',
+      content: '안녕하세요, 고양이입니다. 요즘 회사에서 일이 너무 많아서 스트레스가 심해요. 특히 상사님께서 항상 까다롭게 구시고, 동료들과도 소통이 잘 안 돼요. 매일 밤늦게까지 일하고 집에 가면 너무 지쳐서 아무것도 할 수 없어요. 이런 상황을 어떻게 해결해야 할지 모르겠어요.'
     },
     {
       id: 2,
       title: '강아지님의 고민',
       subtitle: '대인관계가 어려워요',
-      date: '23. 8. 2'
+      date: '23. 8. 2',
+      content: '안녕하세요, 강아지입니다. 저는 사람들과 대화할 때 항상 긴장하고 어색해요. 특히 처음 만나는 사람 앞에서는 말을 제대로 못하고, 대화가 자연스럽게 이어지지 않아요. 친구들도 제가 너무 수줍어한다고 하는데, 어떻게 하면 더 자연스럽게 대화할 수 있을까요?'
     },
     {
       id: 3,
       title: '토끼님의 고민',
       subtitle: '자신감이 부족해요',
-      date: '23. 8. 1'
+      date: '23. 8. 1',
+      content: '안녕하세요, 토끼입니다. 저는 항상 자신이 없어요. 뭔가를 해도 잘할 수 있을까 하는 생각이 먼저 들고, 실패할까봐 두려워서 도전을 못해요. 특히 중요한 일이나 새로운 일을 할 때는 더욱 그렇습니다. 어떻게 하면 자신감을 가질 수 있을까요?'
     },
     {
       id: 4,
       title: '펭귄님의 고민',
       subtitle: '스트레스 관리가 어려워요',
-      date: '23. 7. 30'
+      date: '23. 7. 30',
+      content: '안녕하세요, 펭귄입니다. 요즘 스트레스가 너무 많아서 어떻게 해야 할지 모르겠어요. 일도 많고, 개인적인 문제도 있어서 마음이 복잡해요. 스트레스를 어떻게 관리해야 할지 조언을 구하고 싶어요.'
     },
     {
       id: 5,
       title: '사자님의 고민',
       subtitle: '리더십 발휘가 어려워요',
-      date: '23. 7. 29'
+      date: '23. 7. 29',
+      content: '안녕하세요, 사자입니다. 팀장이 되었는데 리더십을 어떻게 발휘해야 할지 모르겠어요. 팀원들과의 관계도 어렵고, 업무 지시도 제대로 못하고 있어요. 좋은 리더가 되고 싶은데 어떻게 해야 할까요?'
     },
     {
       id: 6,
       title: '코알라님의 고민',
       subtitle: '수면 패턴이 불규칙해요',
-      date: '23. 7. 28'
+      date: '23. 7. 28',
+      content: '안녕하세요, 코알라입니다. 요즘 잠을 제대로 못 자고 있어요. 밤에 잠이 안 오고, 아침에 일어나기도 힘들어요. 수면 패턴을 어떻게 조정해야 할지 조언을 구하고 싶어요.'
     },
     {
       id: 7,
       title: '기린님의 고민',
       subtitle: '목이 길어서 불편해요',
-      date: '23. 7. 27'
+      date: '23. 7. 27',
+      content: '안녕하세요, 기린입니다. 목이 너무 길어서 일상생활이 불편해요. 옷도 맞는 게 없고, 차도 타기 어려워요. 이런 외모적 특징을 어떻게 받아들여야 할지 고민이에요.'
     },
     {
       id: 8,
       title: '코뿔소님의 고민',
       subtitle: '외모에 대한 스트레스가 있어요',
-      date: '23. 7. 26'
+      date: '23. 7. 26',
+      content: '안녕하세요, 코뿔소입니다. 외모 때문에 스트레스를 받고 있어요. 사람들이 저를 보면 놀라고, 때로는 무시하기도 해요. 외모에 대한 스트레스를 어떻게 해결해야 할까요?'
     },
     {
       id: 9,
       title: '하마님의 고민',
       subtitle: '체중 관리가 어려워요',
-      date: '23. 7. 25'
+      date: '23. 7. 25',
+      content: '안녕하세요, 하마입니다. 체중 관리가 너무 어려워요. 다이어트를 해도 금방 포기하고, 운동도 꾸준히 못하고 있어요. 건강한 체중 관리를 어떻게 해야 할지 조언을 구하고 싶어요.'
     },
     {
       id: 10,
       title: '악어님의 고민',
       subtitle: '감정 표현이 어려워요',
-      date: '23. 7. 24'
+      date: '23. 7. 24',
+      content: '안녕하세요, 악어입니다. 감정을 표현하는 것이 너무 어려워요. 기쁘거나 슬플 때도 표정 변화가 없고, 다른 사람들이 제 감정을 이해하지 못해요. 어떻게 감정을 표현해야 할까요?'
     }
   ];
 
@@ -294,7 +398,13 @@ const HomePage = () => {
 
   const handleCardClick = (book) => {
     console.log('카드 클릭:', book.title);
-    // 카드 상세 페이지로 이동하는 로직 추가
+    setSelectedBook(book);
+    setShowBookModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowBookModal(false);
+    setSelectedBook(null);
   };
 
   return (
@@ -344,6 +454,22 @@ const HomePage = () => {
           </BookGrid>
         </WorrySection>
       </ContentArea>
+
+      {/* 책 상세 모달 */}
+      {showBookModal && selectedBook && (
+        <ModalOverlay onClick={handleCloseModal}>
+          <ModalContent onClick={(e) => e.stopPropagation()}>
+            <ModalCloseButton onClick={handleCloseModal}>×</ModalCloseButton>
+            <ModalBookSpine color={selectedBook.color} />
+            <ModalBookContent>
+              <ModalBookTitle>{selectedBook.title}</ModalBookTitle>
+              <ModalBookSubtitle>{selectedBook.subtitle}</ModalBookSubtitle>
+              <ModalBookDate>{selectedBook.date}</ModalBookDate>
+              <ModalBookText>{selectedBook.content}</ModalBookText>
+            </ModalBookContent>
+          </ModalContent>
+        </ModalOverlay>
+      )}
     </HomeContainer>
   );
 };
