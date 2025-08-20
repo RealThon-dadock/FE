@@ -112,11 +112,41 @@ export const addCompletedBook = (book) => {
 
 // 완결된 책 업데이트
 export const updateCompletedBook = (bookId, updatedData) => {
-  const existingBooks = getCompletedBooks();
-  const updatedBooks = existingBooks.map(book => 
-    book.id === bookId ? { ...book, ...updatedData } : book
-  );
-  localStorage.setItem('completedBooks', JSON.stringify(updatedBooks));
+  const writingBooks = getWritingBooks();
+  const completedBooks = getCompletedBooks();
+  
+  // 먼저 작성중인 책에서 찾기
+  const writingBook = writingBooks.find(book => book.id === bookId);
+  if (writingBook) {
+    // 작성중인 책을 완결된 책으로 이동
+    const now = new Date();
+    const completedBook = {
+      ...writingBook,
+      ...updatedData,
+      isWriting: false,
+      isCompleted: true,
+      completedDate: now.toLocaleDateString('ko-KR', {
+        month: '2-digit',
+        day: '2-digit'
+      }),
+      completedAt: updatedData.completedAt || now.toISOString(),
+      author: updatedData.author || writingBook.author || '사용자'
+    };
+    
+    // 작성중인 책에서 제거
+    const updatedWritingBooks = writingBooks.filter(book => book.id !== bookId);
+    localStorage.setItem('writingBooks', JSON.stringify(updatedWritingBooks));
+    
+    // 완결된 책에 추가
+    completedBooks.unshift(completedBook);
+    localStorage.setItem('completedBooks', JSON.stringify(completedBooks));
+  } else {
+    // 이미 완결된 책인 경우 업데이트
+    const updatedBooks = completedBooks.map(book => 
+      book.id === bookId ? { ...book, ...updatedData } : book
+    );
+    localStorage.setItem('completedBooks', JSON.stringify(updatedBooks));
+  }
   
   // 커스텀 이벤트 발생
   window.dispatchEvent(new CustomEvent('booksUpdated'));

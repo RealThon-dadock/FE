@@ -157,29 +157,7 @@ const PlusButton = styled.button`
   }
 `;
 
-const SubmitButton = styled.button`
-  width: 100%;
-  padding: 16px;
-  background-color: #dee2e6;
-  color: #6c757d;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-top: 10px;
-  
-  &:hover {
-    background-color: #ced4da;
-  }
-  
-  &:disabled {
-    background-color: #dee2e6;
-    color: #6c757d;
-    cursor: not-allowed;
-  }
-`;
+
 
 const DialogOverlay = styled.div`
   position: fixed;
@@ -243,6 +221,68 @@ const DialogButton = styled.button`
     &:hover {
       background-color: #545b62;
     }
+  }
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+`;
+
+const TempSaveButton = styled.button`
+  flex: 1;
+  padding: 16px;
+  border: 2px solid #6c757d;
+  border-radius: 12px;
+  background-color: white;
+  color: #6c757d;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  &:disabled {
+    background-color: #e9ecef;
+    border-color: #e9ecef;
+    color: #adb5bd;
+    cursor: not-allowed;
+  }
+`;
+
+const CompleteButton = styled.button`
+  flex: 1;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, ${props => props.bookColor || '#FFB3BA'} 0%, ${props => props.bookColor || '#FFB3BA'}80 100%);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  &:disabled {
+    background: #e9ecef;
+    transform: none;
+    box-shadow: none;
+    cursor: not-allowed;
   }
 `;
 
@@ -340,56 +380,66 @@ const CreateBookPage = () => {
     setShowExitDialog(false);
   };
 
-  const handleSubmit = () => {
+  const handleTempSave = () => {
     if (!bookTitle.trim() || !bookContent.trim()) {
       alert('제목과 내용을 모두 입력해주세요.');
       return;
     }
 
     if (editingBookId) {
-      // 기존 책이 작성중인 책인지 완결된 책인지 확인
-      const writingBooks = JSON.parse(localStorage.getItem('writingBooks') || '[]');
-      const completedBooks = JSON.parse(localStorage.getItem('completedBooks') || '[]');
-      
-      const bookToEdit = writingBooks.find(book => book.id === editingBookId) || 
-                        completedBooks.find(book => book.id === editingBookId);
-      
-      if (bookToEdit) {
-        const updatedBook = {
-          ...bookToEdit,
-          title: bookTitle,
-          content: bookContent,
-          color: selectedColor,
-          lastModified: Date.now()
-        };
-
-        if (bookToEdit.isWriting) {
-          // 작성중인 책 업데이트
-          updateWritingBook(editingBookId, {
-            title: bookTitle,
-            content: bookContent,
-            color: selectedColor,
-            lastModified: Date.now()
-          });
-        } else {
-          // 완결된 책 업데이트 - 완결 시간을 현재 시간으로 업데이트
-          const now = new Date();
-          updateCompletedBook(editingBookId, {
-            title: bookTitle,
-            content: bookContent,
-            color: selectedColor,
-            lastModified: Date.now(),
-            completedAt: now.toISOString(), // 완결 시간을 현재 시간으로 업데이트
-            date: now.toLocaleDateString('ko-KR', {
-              month: '2-digit',
-              day: '2-digit'
-            }),
-            author: user?.nickname || '사용자' // 사용자 닉네임 업데이트
-          });
-        }
-      }
+      // 기존 책 임시저장 (작성중 상태 유지)
+      updateWritingBook(editingBookId, {
+        title: bookTitle,
+        content: bookContent,
+        color: selectedColor,
+        lastModified: Date.now(),
+        author: user?.nickname || '사용자'
+      });
     } else {
-      // 새 책 데이터 생성 - 완결 시간을 현재 시간으로 설정
+      // 새 책 임시저장
+      const newBook = {
+        title: bookTitle,
+        content: bookContent,
+        color: selectedColor,
+        date: new Date().toLocaleDateString('ko-KR', {
+          month: '2-digit',
+          day: '2-digit'
+        }),
+        lastModified: Date.now(),
+        author: user?.nickname || '사용자',
+        isCompleted: false
+      };
+      addWritingBook(newBook);
+    }
+
+    alert('임시저장되었습니다.');
+    navigate('/bookshelf');
+  };
+
+  const handleComplete = () => {
+    if (!bookTitle.trim() || !bookContent.trim()) {
+      alert('제목과 내용을 모두 입력해주세요.');
+      return;
+    }
+
+    if (editingBookId) {
+      // 기존 책 완결
+      const now = new Date();
+      updateCompletedBook(editingBookId, {
+        title: bookTitle,
+        content: bookContent,
+        color: selectedColor,
+        lastModified: Date.now(),
+        completedAt: now.toISOString(),
+        date: now.toLocaleDateString('ko-KR', {
+          month: '2-digit',
+          day: '2-digit'
+        }),
+        author: user?.nickname || '사용자',
+        isCompleted: true
+      });
+    } else {
+      // 새 책 완결
       const now = new Date();
       const newBook = {
         title: bookTitle,
@@ -399,22 +449,19 @@ const CreateBookPage = () => {
           month: '2-digit',
           day: '2-digit'
         }),
-        completedAt: now.toISOString(), // 완결 시간을 ISO 문자열로 저장
-        author: user?.nickname || '사용자', // 사용자 닉네임 추가
+        completedAt: now.toISOString(),
+        author: user?.nickname || '사용자',
         isLocked: false,
         isCompleted: true
       };
 
-      console.log('새 책 생성:', newBook); // 디버깅용 로그
-      console.log('완결 시간:', newBook.completedAt); // 디버깅용 로그
+      console.log('새 책 완결:', newBook);
+      console.log('완결 시간:', newBook.completedAt);
 
-      // 새 책 추가 (유틸리티 함수 사용)
       addCompletedBook(newBook);
     }
 
     console.log('책이 완결되었습니다.');
-    
-    // 책장 페이지로 이동
     navigate('/bookshelf');
   };
 
@@ -483,13 +530,21 @@ const CreateBookPage = () => {
           </ColorGrid>
         </ColorSection>
 
-        <SubmitButton
-          onClick={handleSubmit}
-          disabled={!bookTitle.trim() || !bookContent.trim()}
-          bookColor={selectedColor}
-        >
-          {editingBookId ? '수정 완료' : '전문가에게 내 이야기 보내기'}
-        </SubmitButton>
+        <ButtonContainer>
+          <TempSaveButton
+            onClick={handleTempSave}
+            disabled={!bookTitle.trim() || !bookContent.trim()}
+          >
+            임시저장
+          </TempSaveButton>
+          <CompleteButton
+            onClick={handleComplete}
+            disabled={!bookTitle.trim() || !bookContent.trim()}
+            bookColor={selectedColor}
+          >
+            {editingBookId ? '완결하기' : '전문가에게 내 이야기 보내기'}
+          </CompleteButton>
+        </ButtonContainer>
       </ContentArea>
 
       {showExitDialog && (
