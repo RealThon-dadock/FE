@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
   addCompletedBook, 
@@ -39,16 +39,16 @@ const BackButton = styled.button`
 `;
 
 const ContentArea = styled.div`
-  padding: 20px;
+  padding: 16px;
   padding-bottom: 100px;
-  padding-top: 20px;
+  padding-top: 16px;
 `;
 
 const InputSection = styled.div`
   background-color: white;
   border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
+  padding: 16px;
+  margin-bottom: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 `;
 
@@ -62,7 +62,7 @@ const InputLabel = styled.label`
 
 const TitleInput = styled.input`
   width: 100%;
-  padding: 16px;
+  padding: 12px 16px;
   border: 2px solid #e9ecef;
   border-radius: 8px;
   font-size: 16px;
@@ -81,7 +81,7 @@ const TitleInput = styled.input`
 
 const ContentTextarea = styled.textarea`
   width: 100%;
-  min-height: 200px;
+  min-height: 150px;
   padding: 16px;
   border: 2px solid #e9ecef;
   border-radius: 8px;
@@ -103,9 +103,12 @@ const ContentTextarea = styled.textarea`
 const ColorSection = styled.div`
   background-color: white;
   border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
+  padding: 16px;
+  margin-bottom: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 `;
 
 const ColorLabel = styled.label`
@@ -113,21 +116,22 @@ const ColorLabel = styled.label`
   font-size: 16px;
   font-weight: 600;
   color: #212529;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 `;
 
 const ColorGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  align-items: center;
 `;
 
 const ColorOption = styled.div`
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: 50%;
   cursor: pointer;
-  border: 3px solid ${props => props.selected ? '#007bff' : 'transparent'};
+  border: 3px solid ${props => props.selected ? '#6c757d' : 'transparent'};
   transition: all 0.2s ease;
   
   &:hover {
@@ -135,28 +139,45 @@ const ColorOption = styled.div`
   }
 `;
 
-const SubmitButton = styled.button`
-  width: 100%;
-  padding: 16px;
-  background-color: ${props => props.bookColor || '#007bff'};
-  color: white;
+const PlusButton = styled.button`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #e9ecef;
   border: none;
-  border-radius: 12px;
-  font-size: 18px;
-  font-weight: 600;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
   transition: all 0.2s ease;
   
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    background-color: #dee2e6;
+  }
+`;
+
+const SubmitButton = styled.button`
+  width: 100%;
+  padding: 16px;
+  background-color: #dee2e6;
+  color: #6c757d;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 10px;
+  
+  &:hover {
+    background-color: #ced4da;
   }
   
   &:disabled {
-    background-color: #adb5bd;
+    background-color: #dee2e6;
+    color: #6c757d;
     cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
   }
 `;
 
@@ -227,15 +248,15 @@ const DialogButton = styled.button`
 
 const CreateBookPage = () => {
   const navigate = useNavigate();
-  const { isLoggedIn, isLoading } = useAuth();
+  const { isLoggedIn, isLoading, user } = useAuth();
   const [currentTime, setCurrentTime] = useState('');
   const [bookTitle, setBookTitle] = useState('');
   const [bookContent, setBookContent] = useState('');
-  const [selectedColor, setSelectedColor] = useState('#FF6B6B');
+  const [selectedColor, setSelectedColor] = useState('#FFB3BA');
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [editingBookId, setEditingBookId] = useState(null);
 
-  const colors = ['#FF6B6B', '#FFD93D', '#4ECDC4']; // 빨강, 노랑, 파랑만
+  const colors = ['#FFB3BA', '#FFE5B4', '#B8E6B8']; // 부드러운 핑크, 노랑, 파랑
 
   useEffect(() => {
     const updateTime = () => {
@@ -351,28 +372,41 @@ const CreateBookPage = () => {
             lastModified: Date.now()
           });
         } else {
-          // 완결된 책 업데이트
+          // 완결된 책 업데이트 - 완결 시간을 현재 시간으로 업데이트
+          const now = new Date();
           updateCompletedBook(editingBookId, {
             title: bookTitle,
             content: bookContent,
             color: selectedColor,
-            lastModified: Date.now()
+            lastModified: Date.now(),
+            completedAt: now.toISOString(), // 완결 시간을 현재 시간으로 업데이트
+            date: now.toLocaleDateString('ko-KR', {
+              month: '2-digit',
+              day: '2-digit'
+            }),
+            author: user?.nickname || '사용자' // 사용자 닉네임 업데이트
           });
         }
       }
     } else {
-      // 새 책 데이터 생성
+      // 새 책 데이터 생성 - 완결 시간을 현재 시간으로 설정
+      const now = new Date();
       const newBook = {
         title: bookTitle,
         content: bookContent,
         color: selectedColor,
-        date: new Date().toLocaleDateString('ko-KR', {
+        date: now.toLocaleDateString('ko-KR', {
           month: '2-digit',
           day: '2-digit'
         }),
+        completedAt: now.toISOString(), // 완결 시간을 ISO 문자열로 저장
+        author: user?.nickname || '사용자', // 사용자 닉네임 추가
         isLocked: false,
         isCompleted: true
       };
+
+      console.log('새 책 생성:', newBook); // 디버깅용 로그
+      console.log('완결 시간:', newBook.completedAt); // 디버깅용 로그
 
       // 새 책 추가 (유틸리티 함수 사용)
       addCompletedBook(newBook);
@@ -443,6 +477,9 @@ const CreateBookPage = () => {
                 onClick={() => setSelectedColor(color)}
               />
             ))}
+            <PlusButton>
+              <Plus size={20} />
+            </PlusButton>
           </ColorGrid>
         </ColorSection>
 
@@ -451,7 +488,7 @@ const CreateBookPage = () => {
           disabled={!bookTitle.trim() || !bookContent.trim()}
           bookColor={selectedColor}
         >
-          완결하기
+          {editingBookId ? '수정 완료' : '전문가에게 내 이야기 보내기'}
         </SubmitButton>
       </ContentArea>
 

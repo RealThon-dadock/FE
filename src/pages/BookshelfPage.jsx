@@ -30,7 +30,6 @@ const TabContainer = styled.div`
   display: flex;
   background-color: white;
   border-bottom: 1px solid #e9ecef;
-  margin-top: 20px;
 `;
 
 const Tab = styled.button`
@@ -138,6 +137,17 @@ const BookDate = styled.p`
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   position: relative;
   z-index: 1;
+`;
+
+const BookAuthor = styled.p`
+  margin: 0 0 4px 0;
+  font-size: 11px;
+  color: #ffffff;
+  font-weight: 400;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  position: relative;
+  z-index: 1;
+  opacity: 0.9;
 `;
 
 const LockIcon = styled.div`
@@ -249,7 +259,7 @@ const EmptyText = styled.p`
 
 const BookshelfPage = () => {
   const navigate = useNavigate();
-  const { isLoggedIn, isLoading } = useAuth();
+  const { isLoggedIn, isLoading, profile } = useAuth();
   const [activeTab, setActiveTab] = useState('writing');
   const [writingBooks, setWritingBooks] = useState([]);
   const [completedBooks, setCompletedBooks] = useState([]);
@@ -278,8 +288,13 @@ const BookshelfPage = () => {
   };
 
   const handleBookClick = (book) => {
-    // 포스트 상세 페이지로 이동
-    navigate(`/post/${book.id}`);
+    if (book.isWriting) {
+      // 작성중인 책은 편집 페이지로 이동
+      navigate(`/create-book?edit=${book.id}`);
+    } else {
+      // 완결된 책은 포스트 상세 페이지로 이동
+      navigate(`/post/${book.id}`);
+    }
   };
 
   const handleMenuClick = (e, bookId) => {
@@ -350,7 +365,7 @@ const BookshelfPage = () => {
           active={activeTab === 'writing'} 
           onClick={() => handleTabClick('writing')}
         >
-          작성중
+          {profile?.role === 'expert' ? '상담중' : '작성중'}
         </Tab>
         <Tab 
           active={activeTab === 'completed'} 
@@ -367,30 +382,22 @@ const BookshelfPage = () => {
               <BookCard key={book.id} onClick={() => handleBookClick(book)}>
                 <BookSpine color={book.color} />
                 <BookTitle>{book.title}</BookTitle>
-                <BookDate>{book.date}</BookDate>
+                <BookAuthor>{book.author || '사용자'}</BookAuthor>
+                <BookDate>
+                  {book.isCompleted && book.completedAt 
+                    ? new Date(book.completedAt).toLocaleDateString('ko-KR', {
+                        month: '2-digit',
+                        day: '2-digit'
+                      })
+                    : book.date
+                  }
+                </BookDate>
                 {book.isLocked && (
                   <LockIcon>
                     <Lock size={16} />
                   </LockIcon>
                 )}
-                {book.isWriting && (
-                  <MenuButton onClick={(e) => handleMenuClick(e, book.id)}>
-                    <MoreVertical size={16} />
-                  </MenuButton>
-                )}
-                {openMenuId === book.id && book.isWriting && (
-                  <MenuDropdown>
-                    <MenuItem onClick={() => handleEditBook(book)}>
-                      수정하기
-                    </MenuItem>
-                    <MenuItem onClick={() => handleCompleteBook(book)}>
-                      완결하기
-                    </MenuItem>
-                    <MenuItem onClick={() => handleDeleteBook(book)}>
-                      삭제하기
-                    </MenuItem>
-                  </MenuDropdown>
-                )}
+                {/* 작성중인 책에는 메뉴 버튼 제거 */}
               </BookCard>
             ))}
           </BookGrid>
@@ -398,7 +405,10 @@ const BookshelfPage = () => {
           <EmptyState>
             <EmptyIcon>📚</EmptyIcon>
             <EmptyText>
-              {activeTab === 'writing' ? '작성 중인 책이 없습니다.' : '완결된 책이 없습니다.'}
+              {activeTab === 'writing' 
+                ? (profile?.role === 'expert' ? '상담 중인 책이 없습니다.' : '작성 중인 책이 없습니다.')
+                : '완결된 책이 없습니다.'
+              }
             </EmptyText>
           </EmptyState>
         )}

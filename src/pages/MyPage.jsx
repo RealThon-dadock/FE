@@ -116,7 +116,7 @@ const ContentWrapper = styled.div`
 `;
 
 const MyPage = () => {
-  const { isLoggedIn, user, logout } = useAuth();
+  const { isLoggedIn, user, logout, profile } = useAuth();
   const [writingCount, setWritingCount] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
 
@@ -180,7 +180,7 @@ const MyPage = () => {
             <StatsSection>
               <StatItem>
                 <StatNumber>{writingCount}권</StatNumber>
-                <StatLabel>작성중</StatLabel>
+                <StatLabel>{profile?.role === 'expert' ? '상담중' : '작성중'}</StatLabel>
               </StatItem>
               <StatItem>
                 <StatNumber>{completedCount}권</StatNumber>
