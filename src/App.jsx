@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import styled, { createGlobalStyle } from 'styled-components'
 import reset from 'styled-reset';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
