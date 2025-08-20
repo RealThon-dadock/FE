@@ -9,7 +9,8 @@ import MyPage from './pages/MyPage';
 import BookshelfPage from './pages/BookshelfPage';
 import CreateBookPage from './pages/CreateBookPage';
 import HomePage from './pages/HomePage';
-import ChatPage from './pages/ChatPage';
+import ChatListPage from './pages/ChatListPage';
+import ChatRoomPage from './pages/ChatRoomPage';
 import PostDetailPage from './pages/PostDetailPage';
 import KakaoLoginPage from './pages/KakaoLoginPage';
 import Redirect from './pages/Redirect';
@@ -63,13 +64,13 @@ function AppContent() {
           <Route path="/" element={<HomePage />} />
           <Route path="/my" element={<MyPage />} />
           <Route path="/bookshelf" element={<BookshelfPage />} />
-          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/chat" element={<ChatListPage />} />
           <Route path="/create-book" element={<CreateBookPage />} />
           <Route path="/post/:bookId" element={<PostDetailPage />} />
           <Route path="/kakao-login" element={<KakaoLoginPage />} />
           <Route path="/redirect" element={<Redirect />} />
           <Route path="/choose-expert" element={<ChooseExpert />} />
-          <Route path="/chatting" element={<ChatPage />} />
+          <Route path="/chatting" element={<ChatRoomPage />} />
           <Route path="/expert" element={<ExpertMainPage />} />
           <Route path="/profile-edit" element={
             profile?.role === 'expert' ? <ExpertProfileEditPage /> : <UserProfileEditPage />

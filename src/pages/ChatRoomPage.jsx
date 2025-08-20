@@ -104,7 +104,7 @@ const ChatMessage = styled.p`
   line-height: 1.5;
 `;
 
-const ChatPage = () => {
+const ChatRoomPage = () => {
   const { isLoggedIn, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -175,7 +175,7 @@ const ChatPage = () => {
     <ChatContainer>
       <Header>
         <HeaderLeft>
-          <BackButton onClick={() => navigate(-1)}><ArrowLeft size={24} /></BackButton>
+          <BackButton onClick={() => navigate('/chat')}><ArrowLeft size={24} /></BackButton>
           <HeaderTitle>{expert.name}</HeaderTitle>
         </HeaderLeft>
         <Bell size={22} color="#6B7280" />
@@ -215,4 +215,4 @@ const ChatPage = () => {
   );
 };
 
-export default ChatPage;
+export default ChatRoomPage;
