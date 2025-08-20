@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { ArrowLeft, MoreVertical, Check, Send } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Check, Send, X } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getWritingBooks, getCompletedBooks } from '../utils/bookData';
+import { getWritingBooks, getCompletedBooks, moveToCompleted } from '../utils/bookData';
 import { useAuth } from '../contexts/AuthContext';
 
 const PostDetailContainer = styled.div`
@@ -310,9 +310,130 @@ const SendButton = styled.button`
   }
 `;
 
+const NotificationOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
 
+const NotificationModal = styled.div`
+  background-color: #f8f9fa;
+  border-radius: 16px;
+  padding: 24px;
+  margin: 20px;
+  max-width: 320px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+`;
 
+const CloseButton = styled.button`
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6c757d;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+`;
 
+const NotificationTitle = styled.h3`
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #212529;
+`;
+
+const NotificationButtons = styled.div`
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+`;
+
+const NotificationButton = styled.button`
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &.primary {
+    background-color: #007bff;
+    color: white;
+    
+    &:hover {
+      background-color: #0056b3;
+    }
+  }
+  
+  &.secondary {
+    background-color: #6c757d;
+    color: white;
+    
+    &:hover {
+      background-color: #545b62;
+    }
+  }
+`;
+
+const SuccessMessage = styled.div`
+  color: #28a745;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 16px 0;
+`;
+
+const CompleteButton = styled.button`
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, ${props => props.bookColor || '#FFB3BA'} 0%, ${props => props.bookColor || '#FFB3BA'}80 100%);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin-top: 20px;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  &:disabled {
+    background: #e9ecef;
+    transform: none;
+    box-shadow: none;
+    cursor: not-allowed;
+  }
+`;
 
 const PostDetailPage = () => {
   const navigate = useNavigate();
@@ -321,6 +442,9 @@ const PostDetailPage = () => {
   const [book, setBook] = useState(null);
   const [showMenu, setShowMenu] = useState(false);
   const [commentText, setCommentText] = useState('');
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [selectedVisibility, setSelectedVisibility] = useState('PUBLIC');
   const [comments, setComments] = useState([
     {
       id: 1,
@@ -335,8 +459,6 @@ const PostDetailPage = () => {
       text: '안녕하세요, 심리상담사 너구리입니다. 고양이님께서 심리적압박감이 심하셨군요... 이러한 조언을 드리며 저러한 조언을 드립니다. 더 자세한 상담도 도와드릴게요 :)'
     }
   ]);
-
-
 
   useEffect(() => {
     // URL에서 bookId를 가져와서 해당 책 정보를 찾기
@@ -385,7 +507,43 @@ const PostDetailPage = () => {
     }
   };
 
+  const handleCompleteBook = () => {
+    setShowShareModal(true);
+  };
 
+  const handleShareConfirm = () => {
+    if (book) {
+      try {
+        // 완결 처리
+        moveToCompleted(book.id, selectedVisibility);
+        
+        // 책 정보 업데이트
+        const writingBooks = getWritingBooks();
+        const completedBooks = getCompletedBooks();
+        const allBooks = [...writingBooks, ...completedBooks];
+        const updatedBook = allBooks.find(b => b.id === parseInt(bookId));
+        
+        if (updatedBook) {
+          setBook(updatedBook);
+        }
+        
+        setShowShareModal(false);
+        setShowSuccessModal(true);
+      } catch (error) {
+        console.error('책 완결 실패:', error);
+        alert('책 완결에 실패했습니다.');
+      }
+    }
+  };
+
+  const handleShareCancel = () => {
+    setShowShareModal(false);
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
+    navigate('/bookshelf');
+  };
 
   const handleCloseMenu = () => {
     setShowMenu(false);
@@ -418,8 +576,6 @@ const PostDetailPage = () => {
       navigate(`/choose-expert?postId=${bookId}&postTitle=${encodeURIComponent(book.title)}`);
     }
   };
-
-
 
   if (!book) {
     return (
@@ -485,7 +641,15 @@ const PostDetailPage = () => {
           <PostTitle>{book.title}</PostTitle>
           <PostContent>{book.content}</PostContent>
           
-
+          {/* 작성 중인 책에만 완결 버튼 표시 */}
+          {book.isWriting && profile?.role !== 'expert' && (
+            <CompleteButton 
+              onClick={handleCompleteBook}
+              bookColor={book.color}
+            >
+              완결하기
+            </CompleteButton>
+          )}
         </PostSection>
 
         {/* 댓글 섹션 - 모든 사용자에게 표시 */}
@@ -536,9 +700,57 @@ const PostDetailPage = () => {
             </form>
           </CommentInputSection>
         )}
-
-
       </ContentArea>
+
+      {/* 공유 설정 모달 */}
+      {showShareModal && (
+        <NotificationOverlay onClick={handleShareCancel}>
+          <NotificationModal onClick={(e) => e.stopPropagation()}>
+            <CloseButton onClick={handleShareCancel}>
+              <X size={20} />
+            </CloseButton>
+            <NotificationTitle>사람들에게 공유할까요?</NotificationTitle>
+            <NotificationButtons>
+              <NotificationButton 
+                className="primary" 
+                onClick={() => {
+                  setSelectedVisibility('PUBLIC');
+                  handleShareConfirm();
+                }}
+              >
+                공개
+              </NotificationButton>
+              <NotificationButton 
+                className="secondary" 
+                onClick={() => {
+                  setSelectedVisibility('PRIVATE');
+                  handleShareConfirm();
+                }}
+              >
+                비공개
+              </NotificationButton>
+            </NotificationButtons>
+          </NotificationModal>
+        </NotificationOverlay>
+      )}
+
+      {/* 성공 모달 */}
+      {showSuccessModal && (
+        <NotificationOverlay onClick={handleSuccessClose}>
+          <NotificationModal onClick={(e) => e.stopPropagation()}>
+            <CloseButton onClick={handleSuccessClose}>
+              <X size={20} />
+            </CloseButton>
+            <NotificationTitle>완결 완료!</NotificationTitle>
+            <SuccessMessage>책이 완결되었습니다!</SuccessMessage>
+            <NotificationButtons>
+              <NotificationButton className="primary" onClick={handleSuccessClose}>
+                확인
+              </NotificationButton>
+            </NotificationButtons>
+          </NotificationModal>
+        </NotificationOverlay>
+      )}
     </PostDetailContainer>
   );
 };

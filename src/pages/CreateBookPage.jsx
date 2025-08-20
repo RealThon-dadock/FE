@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { ArrowLeft, Plus, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { createBook } from '../api/book';
+import { 
+  addWritingBook
+} from '../utils/bookData';
 import { useAuth } from '../contexts/AuthContext';
 import LoginRequired from '../components/LoginRequired';
 
@@ -337,24 +339,28 @@ const CreateBookPage = () => {
     setIsSubmitting(true);
 
     try {
-      // 색상 매핑
-      const colorMapping = {
-        '#FFB3BA': 'RED',
-        '#FFE5B4': 'YELLOW', 
-        '#B8E6B8': 'BLUE'
-      };
-
+      // API 스타일의 데이터 구조 유지
       const bookData = {
         userId: user.id,
         title: bookTitle,
         content: bookContent,
         status: 'CONTINUE', // 작성 중 상태로 설정
         visibility: 'PRIVATE', // 기본값은 비공개
-        color: colorMapping[selectedColor] || 'RED'
+        color: selectedColor,
+        author: user?.nickname || '사용자',
+        date: new Date().toLocaleDateString('ko-KR', {
+          month: '2-digit',
+          day: '2-digit'
+        }),
+        createdAt: new Date().toISOString(),
+        isWriting: true,
+        isCompleted: false
       };
 
-      const result = await createBook(bookData);
-      console.log('책 생성 성공:', result);
+      // 로컬 스토리지에 저장 (API 대신)
+      addWritingBook(bookData);
+      
+      console.log('책 생성 성공:', bookData);
       
       setShowSuccessModal(true);
     } catch (error) {

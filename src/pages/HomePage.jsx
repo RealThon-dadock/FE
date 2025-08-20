@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { getBooks } from '../api/book';
+import { getCompletedBooks } from '../utils/bookData';
 import MainPageImg from '../assets/image/MainPageImg.png';
 
 const HomeContainer = styled.div`
@@ -15,7 +15,6 @@ const HomeContainer = styled.div`
 const ContentArea = styled.div`
   padding: 20px;
   padding-bottom: 100px;
-  padding-top: 20px;
 `;
 
 const HeroImage = styled.div`
@@ -24,10 +23,12 @@ const HeroImage = styled.div`
   background-image: url(${MainPageImg});
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
   border-radius: 12px;
   margin-bottom: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+`;
+
+const TodaySection = styled.section`
+  margin-bottom: 32px;
 `;
 
 const SectionTitle = styled.h2`
@@ -35,11 +36,6 @@ const SectionTitle = styled.h2`
   font-weight: 700;
   color: #212529;
   margin: 0 0 16px 0;
-`;
-
-// 오늘의 완결 BOOK UP 섹션
-const TodaySection = styled.section`
-  margin-bottom: 32px;
 `;
 
 const ScrollContainer = styled.div`
@@ -60,17 +56,29 @@ const HorizontalCardList = styled.div`
 
 const HorizontalCard = styled.div`
   min-width: 280px;
-  background: white;
+  background: linear-gradient(135deg, ${props => props.color || '#FFB3BA'} 0%, ${props => props.color || '#FFB3BA'}80 100%);
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: all 0.3s ease;
+  position: relative;
   
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    background: rgba(255, 255, 255, 0.3);
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
   }
 `;
 
@@ -79,40 +87,43 @@ const CardSpine = styled.div`
   left: 0;
   top: 0;
   bottom: 0;
-  width: 20px;
-  background: linear-gradient(180deg, ${props => props.color || '#4ECDC4'} 0%, ${props => props.color || '#4ECDC4'}80 100%);
+  width: 8px;
+  background: rgba(255, 255, 255, 0.3);
   border-top-left-radius: 12px;
   border-bottom-left-radius: 12px;
 `;
 
 const CardContent = styled.div`
-  margin-left: 12px;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 `;
 
 const CardTitle = styled.h3`
-  font-size: 16px;
-  font-weight: 600;
-  color: #212529;
   margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 700;
   line-height: 1.3;
 `;
 
 const CardSubtitle = styled.p`
+  margin: 0 0 12px 0;
   font-size: 14px;
-  color: #6c757d;
-  margin: 0 0 8px 0;
+  opacity: 0.9;
+  line-height: 1.4;
 `;
 
-const CardDate = styled.span`
+const CardDate = styled.p`
+  margin: 0 0 8px 0;
   font-size: 12px;
-  color: #adb5bd;
+  font-weight: 500;
+  opacity: 0.8;
 `;
 
 const CardDescription = styled.p`
+  margin: 0;
   font-size: 12px;
-  color: #6c757d;
-  margin: 8px 0 0 0;
-  line-height: 1.4;
+  opacity: 0.7;
+  font-style: italic;
 `;
 
 const DotIndicator = styled.div`
@@ -126,11 +137,10 @@ const Dot = styled.div`
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: ${props => props.active ? '#007bff' : '#dee2e6'};
-  transition: background-color 0.2s ease;
+  background-color: ${props => props.active ? '#212529' : '#dee2e6'};
+  transition: all 0.2s ease;
 `;
 
-// 고민은 이제 저 멀리 섹션
 const WorrySection = styled.section`
   margin-bottom: 32px;
 `;
@@ -142,44 +152,58 @@ const BookGrid = styled.div`
 `;
 
 const BookCard = styled.div`
-  background: white;
+  background: linear-gradient(135deg, ${props => props.color || '#FFB3BA'} 0%, ${props => props.color || '#FFB3BA'}80 100%);
   border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: all 0.3s ease;
+  position: relative;
   
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    background: rgba(255, 255, 255, 0.3);
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
   }
 `;
 
 const BookContent = styled.div`
-  margin-top: 8px;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 `;
 
 const BookTitle = styled.h3`
-  font-size: 14px;
-  font-weight: 600;
-  color: #212529;
-  margin: 0 0 6px 0;
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 700;
   line-height: 1.3;
 `;
 
 const BookSubtitle = styled.p`
+  margin: 0 0 8px 0;
   font-size: 12px;
-  color: #6c757d;
-  margin: 0 0 6px 0;
+  opacity: 0.9;
+  line-height: 1.4;
 `;
 
-const BookDate = styled.span`
+const BookDate = styled.p`
+  margin: 0;
   font-size: 11px;
-  color: #adb5bd;
+  font-weight: 500;
+  opacity: 0.8;
 `;
 
-// 책 상세 모달 스타일
 const ModalOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -190,19 +214,19 @@ const ModalOverlay = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
-  padding: 20px;
+  z-index: 1000;
 `;
 
 const ModalContent = styled.div`
   background-color: white;
   border-radius: 16px;
-  padding: 24px;
+  margin: 20px;
   max-width: 400px;
   width: 100%;
   max-height: 80vh;
   overflow-y: auto;
   position: relative;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 `;
 
 const ModalCloseButton = styled.button`
@@ -214,11 +238,10 @@ const ModalCloseButton = styled.button`
   font-size: 24px;
   cursor: pointer;
   color: #6c757d;
-  padding: 4px;
-  border-radius: 4px;
+  z-index: 1;
   
   &:hover {
-    background-color: #f8f9fa;
+    color: #212529;
   }
 `;
 
@@ -227,48 +250,49 @@ const ModalBookSpine = styled.div`
   left: 0;
   top: 0;
   bottom: 0;
-  width: 20px;
-  background: linear-gradient(180deg, ${props => props.color || '#4ECDC4'} 0%, ${props => props.color || '#4ECDC4'}80 100%);
+  width: 12px;
+  background: linear-gradient(180deg, ${props => props.color || '#495057'} 0%, ${props => props.color || '#495057'}80 100%);
   border-top-left-radius: 16px;
   border-bottom-left-radius: 16px;
 `;
 
 const ModalBookContent = styled.div`
-  margin-left: 16px;
+  padding: 24px 24px 24px 36px;
 `;
 
 const ModalBookTitle = styled.h2`
+  margin: 0 0 12px 0;
   font-size: 20px;
   font-weight: 700;
   color: #212529;
-  margin: 0 0 8px 0;
   line-height: 1.3;
 `;
 
 const ModalBookSubtitle = styled.p`
+  margin: 0 0 16px 0;
   font-size: 16px;
   color: #6c757d;
-  margin: 0 0 12px 0;
+  line-height: 1.5;
 `;
 
-const ModalBookDate = styled.span`
+const ModalBookDate = styled.p`
+  margin: 0 0 20px 0;
   font-size: 14px;
-  color: #adb5bd;
-  margin-bottom: 20px;
-  display: block;
+  color: #6c757d;
+  font-weight: 500;
 `;
 
 const ModalBookText = styled.p`
+  margin: 0;
   font-size: 16px;
   line-height: 1.6;
   color: #495057;
-  margin: 0;
-  white-space: pre-line;
+  white-space: pre-wrap;
 `;
 
 const LoadingText = styled.div`
   text-align: center;
-  padding: 40px;
+  padding: 40px 20px;
   color: #6c757d;
   font-size: 16px;
 `;
@@ -281,17 +305,6 @@ const HomePage = () => {
   const [displayedWorryBooks, setDisplayedWorryBooks] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
   const [showBookModal, setShowBookModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // 색상 매핑 함수
-  const getColorFromBackend = (backendColor) => {
-    const colorMapping = {
-      'RED': '#FF6B6B',
-      'YELLOW': '#FFD93D',
-      'BLUE': '#4ECDC4'
-    };
-    return colorMapping[backendColor] || '#4ECDC4';
-  };
 
   // 랜덤으로 책을 선택하는 함수
   const getRandomBooks = (books, count) => {
@@ -301,48 +314,39 @@ const HomePage = () => {
 
   // 책 데이터 로드
   useEffect(() => {
-    const loadBooks = async () => {
-      try {
-        setIsLoading(true);
-        const response = await getBooks();
-        const allBooks = response.books || [];
-        
-        // 완결된 공개 책들만 필터링
-        const completedPublicBooks = allBooks.filter(book => 
-          book.status === 'END' && book.visibility === 'PUBLIC'
-        );
+    const loadBooks = () => {
+      const allCompletedBooks = getCompletedBooks();
+      
+      // 완결된 공개 책들만 필터링 (visibility가 PUBLIC이거나 isLocked가 false인 것들)
+      const publicCompletedBooks = allCompletedBooks.filter(book => 
+        book.visibility === 'PUBLIC' || !book.isLocked
+      );
 
-        // 오늘의 완결 BOOK UP (3개)
-        const todayBooksData = getRandomBooks(completedPublicBooks, 3).map(book => ({
-          ...book,
-          color: getColorFromBackend(book.color),
-          date: new Date(book.completedAt || book.createdAt).toLocaleDateString('ko-KR', {
-            month: '2-digit',
-            day: '2-digit'
-          }),
-          description: '전문가와의 상담으로 해결되었어요!'
-        }));
+      // 오늘의 완결 BOOK UP (3개)
+      const todayBooksData = getRandomBooks(publicCompletedBooks, 3).map(book => ({
+        ...book,
+        date: book.completedAt 
+          ? new Date(book.completedAt).toLocaleDateString('ko-KR', {
+              month: '2-digit',
+              day: '2-digit'
+            })
+          : book.date,
+        description: '전문가와의 상담으로 해결되었어요!'
+      }));
 
-        // 고민은 이제 저 멀리 (4개)
-        const worryBooksData = getRandomBooks(completedPublicBooks, 4).map(book => ({
-          ...book,
-          color: getColorFromBackend(book.color),
-          date: new Date(book.completedAt || book.createdAt).toLocaleDateString('ko-KR', {
-            month: '2-digit',
-            day: '2-digit'
-          })
-        }));
+      // 고민은 이제 저 멀리 (4개)
+      const worryBooksData = getRandomBooks(publicCompletedBooks, 4).map(book => ({
+        ...book,
+        date: book.completedAt 
+          ? new Date(book.completedAt).toLocaleDateString('ko-KR', {
+              month: '2-digit',
+              day: '2-digit'
+            })
+          : book.date
+      }));
 
-        setTodayBooks(todayBooksData);
-        setDisplayedWorryBooks(worryBooksData);
-      } catch (error) {
-        console.error('책 목록 로드 실패:', error);
-        // 에러 시 기본 데이터 사용
-        setTodayBooks([]);
-        setDisplayedWorryBooks([]);
-      } finally {
-        setIsLoading(false);
-      }
+      setTodayBooks(todayBooksData);
+      setDisplayedWorryBooks(worryBooksData);
     };
 
     loadBooks();
@@ -366,17 +370,6 @@ const HomePage = () => {
     setSelectedBook(null);
   };
 
-  if (isLoading) {
-    return (
-      <HomeContainer>
-        <ContentArea>
-          <HeroImage />
-          <LoadingText>책들을 불러오는 중...</LoadingText>
-        </ContentArea>
-      </HomeContainer>
-    );
-  }
-
   return (
     <HomeContainer>
       <ContentArea>
@@ -391,7 +384,11 @@ const HomePage = () => {
               <ScrollContainer>
                 <HorizontalCardList ref={scrollRef} onScroll={handleScroll}>
                   {todayBooks.map((book) => (
-                    <HorizontalCard key={book.id} onClick={() => handleCardClick(book)}>
+                    <HorizontalCard 
+                      key={book.id} 
+                      onClick={() => handleCardClick(book)}
+                      color={book.color}
+                    >
                       <CardSpine color={book.color} />
                       <CardContent>
                         <CardTitle>{book.title}</CardTitle>
@@ -420,7 +417,11 @@ const HomePage = () => {
           {displayedWorryBooks.length > 0 ? (
             <BookGrid>
               {displayedWorryBooks.map((book) => (
-                <BookCard key={book.id} onClick={() => handleCardClick(book)}>
+                <BookCard 
+                  key={book.id} 
+                  onClick={() => handleCardClick(book)}
+                  color={book.color}
+                >
                   <BookContent>
                     <BookTitle>{book.title}</BookTitle>
                     <BookSubtitle>{book.content.substring(0, 20)}...</BookSubtitle>
