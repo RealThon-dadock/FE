@@ -42,7 +42,7 @@ export const deleteWritingBook = (bookId) => {
 };
 
 // 작성중인 책을 완결된 책으로 이동
-export const moveToCompleted = (bookId) => {
+export const moveToCompleted = (bookId, visibility = 'PUBLIC') => {
   const writingBooks = getWritingBooks();
   const completedBooks = getCompletedBooks();
   
@@ -58,7 +58,8 @@ export const moveToCompleted = (bookId) => {
         day: '2-digit'
       }),
       completedAt: now.toISOString(), // 완결 시간 저장
-      author: bookToMove.author || '사용자' // 작성자 정보 보존
+      author: bookToMove.author || '사용자', // 작성자 정보 보존
+      visibility: visibility // 공개/비공개 설정
     };
     
     // 작성중인 책에서 제거

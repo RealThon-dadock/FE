@@ -1,14 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Plus, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  addCompletedBook, 
-  addWritingBook, 
-  updateWritingBook,
-  deleteWritingBook,
-  updateCompletedBook
-} from '../utils/bookData';
+import { createBook } from '../api/book';
 import { useAuth } from '../contexts/AuthContext';
 import LoginRequired from '../components/LoginRequired';
 
@@ -157,106 +151,12 @@ const PlusButton = styled.button`
   }
 `;
 
-
-
-const DialogOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-`;
-
-const Dialog = styled.div`
-  background-color: white;
-  border-radius: 12px;
-  padding: 24px;
-  margin: 20px;
-  max-width: 320px;
-  width: 100%;
-  text-align: center;
-`;
-
-const DialogTitle = styled.h3`
-  margin: 0 0 16px 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #212529;
-`;
-
-const DialogButtons = styled.div`
-  display: flex;
-  gap: 12px;
-  margin-top: 24px;
-`;
-
-const DialogButton = styled.button`
-  flex: 1;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  
-  &.primary {
-    background-color: #007bff;
-    color: white;
-    
-    &:hover {
-      background-color: #0056b3;
-    }
-  }
-  
-  &.secondary {
-    background-color: #6c757d;
-    color: white;
-    
-    &:hover {
-      background-color: #545b62;
-    }
-  }
-`;
-
 const ButtonContainer = styled.div`
-  display: flex;
-  gap: 12px;
   margin-top: 20px;
 `;
 
-const TempSaveButton = styled.button`
-  flex: 1;
-  padding: 16px;
-  border: 2px solid #6c757d;
-  border-radius: 12px;
-  background-color: white;
-  color: #6c757d;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  
-  &:hover {
-    background-color: #6c757d;
-    color: white;
-  }
-  
-  &:disabled {
-    background-color: #e9ecef;
-    border-color: #e9ecef;
-    color: #adb5bd;
-    cursor: not-allowed;
-  }
-`;
-
 const CompleteButton = styled.button`
-  flex: 1;
+  width: 100%;
   padding: 16px;
   border: none;
   border-radius: 12px;
@@ -286,6 +186,106 @@ const CompleteButton = styled.button`
   }
 `;
 
+const NotificationOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+const NotificationModal = styled.div`
+  background-color: #f8f9fa;
+  border-radius: 16px;
+  padding: 24px;
+  margin: 20px;
+  max-width: 320px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6c757d;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+`;
+
+const NotificationTitle = styled.h3`
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #212529;
+`;
+
+const NotificationButtons = styled.div`
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+`;
+
+const NotificationButton = styled.button`
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &.primary {
+    background-color: #007bff;
+    color: white;
+    
+    &:hover {
+      background-color: #0056b3;
+    }
+  }
+  
+  &.secondary {
+    background-color: #6c757d;
+    color: white;
+    
+    &:hover {
+      background-color: #545b62;
+    }
+  }
+`;
+
+const SuccessMessage = styled.div`
+  color: #28a745;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 16px 0;
+`;
+
+const ErrorMessage = styled.div`
+  color: #dc3545;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 16px 0;
+`;
+
 const CreateBookPage = () => {
   const navigate = useNavigate();
   const { isLoggedIn, isLoading, user } = useAuth();
@@ -293,8 +293,10 @@ const CreateBookPage = () => {
   const [bookTitle, setBookTitle] = useState('');
   const [bookContent, setBookContent] = useState('');
   const [selectedColor, setSelectedColor] = useState('#FFB3BA');
-  const [showExitDialog, setShowExitDialog] = useState(false);
-  const [editingBookId, setEditingBookId] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const colors = ['#FFB3BA', '#FFE5B4', '#B8E6B8']; // 부드러운 핑크, 노랑, 파랑
 
@@ -315,154 +317,62 @@ const CreateBookPage = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // URL 파라미터에서 편집할 책 ID 확인
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const bookId = urlParams.get('edit');
-    if (bookId) {
-      setEditingBookId(parseInt(bookId));
-      // 기존 책 데이터 로드
-      const writingBooks = JSON.parse(localStorage.getItem('writingBooks') || '[]');
-      const completedBooks = JSON.parse(localStorage.getItem('completedBooks') || '[]');
-      const allBooks = [...writingBooks, ...completedBooks];
-      const bookToEdit = allBooks.find(book => book.id === parseInt(bookId));
-      
-      if (bookToEdit) {
-        setBookTitle(bookToEdit.title || '');
-        setBookContent(bookToEdit.content || '');
-        setSelectedColor(bookToEdit.color || '#FF6B6B');
-      }
-    }
-  }, []);
-
   const handleBack = () => {
-    // 내용이 입력되어 있으면 다이얼로그 표시
-    if (bookTitle.trim() || bookContent.trim()) {
-      setShowExitDialog(true);
-    } else {
-      navigate('/bookshelf');
-    }
-  };
-
-  const handleExit = () => {
-    setShowExitDialog(false);
     navigate('/bookshelf');
   };
 
-  const handleSaveDraft = () => {
-    if (editingBookId) {
-      // 기존 책 업데이트
-      updateWritingBook(editingBookId, {
-        title: bookTitle,
-        content: bookContent,
-        color: selectedColor,
-        lastModified: Date.now()
-      });
-    } else {
-      // 새 책을 작성중인 책으로 추가
-      const newBook = {
-        title: bookTitle,
-        content: bookContent,
-        color: selectedColor,
-        date: new Date().toLocaleDateString('ko-KR', {
-          month: '2-digit',
-          day: '2-digit'
-        }),
-        lastModified: Date.now()
-      };
-      addWritingBook(newBook);
-    }
-    setShowExitDialog(false);
-    navigate('/bookshelf');
-  };
-
-  const handleCancelDialog = () => {
-    setShowExitDialog(false);
-  };
-
-  const handleTempSave = () => {
+  const handleCreateBook = async () => {
     if (!bookTitle.trim() || !bookContent.trim()) {
-      alert('제목과 내용을 모두 입력해주세요.');
+      setErrorMessage('제목과 내용을 모두 입력해주세요.');
+      setShowErrorModal(true);
       return;
     }
 
-    if (editingBookId) {
-      // 기존 책 임시저장 (작성중 상태 유지)
-      updateWritingBook(editingBookId, {
-        title: bookTitle,
-        content: bookContent,
-        color: selectedColor,
-        lastModified: Date.now(),
-        author: user?.nickname || '사용자'
-      });
-    } else {
-      // 새 책 임시저장
-      const newBook = {
-        title: bookTitle,
-        content: bookContent,
-        color: selectedColor,
-        date: new Date().toLocaleDateString('ko-KR', {
-          month: '2-digit',
-          day: '2-digit'
-        }),
-        lastModified: Date.now(),
-        author: user?.nickname || '사용자',
-        isCompleted: false
-      };
-      addWritingBook(newBook);
-    }
-
-    alert('임시저장되었습니다.');
-    navigate('/bookshelf');
-  };
-
-  const handleComplete = () => {
-    if (!bookTitle.trim() || !bookContent.trim()) {
-      alert('제목과 내용을 모두 입력해주세요.');
+    if (!user || !user.id) {
+      setErrorMessage('사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.');
+      setShowErrorModal(true);
       return;
     }
 
-    if (editingBookId) {
-      // 기존 책 완결
-      const now = new Date();
-      updateCompletedBook(editingBookId, {
-        title: bookTitle,
-        content: bookContent,
-        color: selectedColor,
-        lastModified: Date.now(),
-        completedAt: now.toISOString(),
-        date: now.toLocaleDateString('ko-KR', {
-          month: '2-digit',
-          day: '2-digit'
-        }),
-        author: user?.nickname || '사용자',
-        isCompleted: true
-      });
-    } else {
-      // 새 책 완결
-      const now = new Date();
-      const newBook = {
-        title: bookTitle,
-        content: bookContent,
-        color: selectedColor,
-        date: now.toLocaleDateString('ko-KR', {
-          month: '2-digit',
-          day: '2-digit'
-        }),
-        completedAt: now.toISOString(),
-        author: user?.nickname || '사용자',
-        isLocked: false,
-        isCompleted: true
+    setIsSubmitting(true);
+
+    try {
+      // 색상 매핑
+      const colorMapping = {
+        '#FFB3BA': 'RED',
+        '#FFE5B4': 'YELLOW', 
+        '#B8E6B8': 'BLUE'
       };
 
-      console.log('새 책 완결:', newBook);
-      console.log('완결 시간:', newBook.completedAt);
+      const bookData = {
+        userId: user.id,
+        title: bookTitle,
+        content: bookContent,
+        status: 'CONTINUE', // 작성 중 상태로 설정
+        visibility: 'PRIVATE', // 기본값은 비공개
+        color: colorMapping[selectedColor] || 'RED'
+      };
 
-      addCompletedBook(newBook);
+      const result = await createBook(bookData);
+      console.log('책 생성 성공:', result);
+      
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error('책 생성 실패:', error);
+      setErrorMessage('책 생성에 실패했습니다. 다시 시도해주세요.');
+      setShowErrorModal(true);
+    } finally {
+      setIsSubmitting(false);
     }
+  };
 
-    console.log('책이 완결되었습니다.');
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
     navigate('/bookshelf');
+  };
+
+  const handleErrorClose = () => {
+    setShowErrorModal(false);
   };
 
   // 로딩 중이거나 로그인하지 않은 경우
@@ -531,36 +441,50 @@ const CreateBookPage = () => {
         </ColorSection>
 
         <ButtonContainer>
-          <TempSaveButton
-            onClick={handleTempSave}
-            disabled={!bookTitle.trim() || !bookContent.trim()}
-          >
-            임시저장
-          </TempSaveButton>
           <CompleteButton
-            onClick={handleComplete}
-            disabled={!bookTitle.trim() || !bookContent.trim()}
+            onClick={handleCreateBook}
+            disabled={!bookTitle.trim() || !bookContent.trim() || isSubmitting}
             bookColor={selectedColor}
           >
-            {editingBookId ? '완결하기' : '전문가에게 내 이야기 보내기'}
+            {isSubmitting ? '생성 중...' : '책 생성하기'}
           </CompleteButton>
         </ButtonContainer>
       </ContentArea>
 
-      {showExitDialog && (
-        <DialogOverlay onClick={handleCancelDialog}>
-          <Dialog onClick={(e) => e.stopPropagation()}>
-            <DialogTitle>정말 나갈까요?</DialogTitle>
-            <DialogButtons>
-              <DialogButton className="secondary" onClick={handleSaveDraft}>
-                임시저장
-              </DialogButton>
-              <DialogButton className="primary" onClick={handleExit}>
-                나가기
-              </DialogButton>
-            </DialogButtons>
-          </Dialog>
-        </DialogOverlay>
+      {/* 성공 모달 */}
+      {showSuccessModal && (
+        <NotificationOverlay onClick={handleSuccessClose}>
+          <NotificationModal onClick={(e) => e.stopPropagation()}>
+            <CloseButton onClick={handleSuccessClose}>
+              <X size={20} />
+            </CloseButton>
+            <NotificationTitle>책 생성 완료!</NotificationTitle>
+            <SuccessMessage>새로운 책이 생성되었습니다!</SuccessMessage>
+            <NotificationButtons>
+              <NotificationButton className="primary" onClick={handleSuccessClose}>
+                확인
+              </NotificationButton>
+            </NotificationButtons>
+          </NotificationModal>
+        </NotificationOverlay>
+      )}
+
+      {/* 에러 모달 */}
+      {showErrorModal && (
+        <NotificationOverlay onClick={handleErrorClose}>
+          <NotificationModal onClick={(e) => e.stopPropagation()}>
+            <CloseButton onClick={handleErrorClose}>
+              <X size={20} />
+            </CloseButton>
+            <NotificationTitle>오류 발생</NotificationTitle>
+            <ErrorMessage>{errorMessage}</ErrorMessage>
+            <NotificationButtons>
+              <NotificationButton className="secondary" onClick={handleErrorClose}>
+                확인
+              </NotificationButton>
+            </NotificationButtons>
+          </NotificationModal>
+        </NotificationOverlay>
       )}
     </CreateBookContainer>
   );
