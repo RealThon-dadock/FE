@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
+import MainPageImg from '../assets/image/MainPageImg.png';
 
 const HomeContainer = styled.div`
   max-width: 480px;
@@ -13,6 +14,18 @@ const ContentArea = styled.div`
   padding: 20px;
   padding-bottom: 100px;
   padding-top: 20px;
+`;
+
+const HeroImage = styled.div`
+  width: 100%;
+  height: 200px;
+  background-image: url(${MainPageImg});
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 `;
 
 const SectionTitle = styled.h2`
@@ -287,6 +300,9 @@ const HomePage = () => {
   return (
     <HomeContainer>
       <ContentArea>
+        {/* 히어로 이미지 */}
+        <HeroImage />
+        
         {/* 오늘의 완결 BOOK UP 섹션 */}
         <TodaySection>
           <SectionTitle>오늘의 완결 BOOK UP!</SectionTitle>
