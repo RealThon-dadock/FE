@@ -167,6 +167,8 @@ const MyPage = () => {
     } else if (menuId === 'login') {
       // 로그인 페이지로 이동하는 로직 추가
       window.location.href = '/login';
+    } else if (menuId === 'ai-settings') {
+      navigate('/ai-settings');
     }
     // 각 메뉴에 대한 처리 로직 추가
   };

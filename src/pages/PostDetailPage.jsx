@@ -112,7 +112,7 @@ const MenuItem = styled.button`
 
 const ContentArea = styled.div`
   padding: 20px;
-  padding-bottom: 100px; /* 메뉴 바 높이만큼 패딩 */
+  padding-bottom: 100px;
 `;
 
 const PostSection = styled.div`
@@ -202,6 +202,11 @@ const CommentProfileImage = styled.div`
   margin-right: 12px;
   flex-shrink: 0;
   position: relative;
+  cursor: pointer;
+  
+  &:hover {
+    opacity: 0.8;
+  }
 `;
 
 const VerifiedBadge = styled.div`
@@ -227,6 +232,11 @@ const CommentAuthor = styled.h4`
   font-size: 16px;
   font-weight: 600;
   color: #212529;
+  cursor: pointer;
+  
+  &:hover {
+    text-decoration: underline;
+  }
 `;
 
 const CommentDate = styled.p`
@@ -255,7 +265,7 @@ const CommentInputSection = styled.div`
 const CommentInputContainer = styled.div`
   display: flex;
   gap: 8px;
-  align-items: flex-end;
+  align-items: center;
 `;
 
 const CommentTextarea = styled.textarea`
@@ -302,6 +312,8 @@ const SendButton = styled.button`
 
 
 
+
+
 const PostDetailPage = () => {
   const navigate = useNavigate();
   const { bookId } = useParams();
@@ -323,6 +335,8 @@ const PostDetailPage = () => {
       text: '안녕하세요, 심리상담사 너구리입니다. 고양이님께서 심리적압박감이 심하셨군요... 이러한 조언을 드리며 저러한 조언을 드립니다. 더 자세한 상담도 도와드릴게요 :)'
     }
   ]);
+
+
 
   useEffect(() => {
     // URL에서 bookId를 가져와서 해당 책 정보를 찾기
@@ -398,6 +412,15 @@ const PostDetailPage = () => {
     e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
   };
 
+  // 전문가 클릭 핸들러 (일반 사용자만)
+  const handleExpertClick = () => {
+    if (profile?.role !== 'expert') {
+      navigate(`/choose-expert?postId=${bookId}&postTitle=${encodeURIComponent(book.title)}`);
+    }
+  };
+
+
+
   if (!book) {
     return (
       <PostDetailContainer>
@@ -471,13 +494,13 @@ const PostDetailPage = () => {
           
           {comments.map((comment) => (
             <CommentItem key={comment.id}>
-              <CommentProfileImage>
+              <CommentProfileImage onClick={handleExpertClick}>
                 <VerifiedBadge>
                   <Check size={10} color="white" />
                 </VerifiedBadge>
               </CommentProfileImage>
               <CommentContent>
-                <CommentAuthor>{comment.author}</CommentAuthor>
+                <CommentAuthor onClick={handleExpertClick}>{comment.author}</CommentAuthor>
                 <CommentDate>
                   {new Date(comment.date).toLocaleString('ko-KR', {
                     month: '2-digit',
@@ -513,6 +536,8 @@ const PostDetailPage = () => {
             </form>
           </CommentInputSection>
         )}
+
+
       </ContentArea>
     </PostDetailContainer>
   );
