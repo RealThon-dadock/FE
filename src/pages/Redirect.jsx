@@ -39,31 +39,47 @@ const Redirect = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const token = parseAccessTokenFromHash(window.location.hash);
-    if (!token) {
-      setError('엑세스 토큰을 찾을 수 없습니다.');
-      return;
-    }
+    let cancelled = false;
+    ensureKakaoInitialized()
+      .then(() => {
+        const token = parseAccessTokenFromHash(window.location.hash);
+        if (!token) {
+          setError('엑세스 토큰을 찾을 수 없습니다.');
+          return;
+        }
 
-    // 토큰을 로컬스토리지에 저장
-    localStorage.setItem('kakao_token', token);
+        window.Kakao.Auth.setAccessToken(token);
+        localStorage.setItem('kakao_token', token);
 
-    // 간단한 사용자 정보 생성 (실제로는 서버에서 토큰을 검증하고 사용자 정보를 가져와야 함)
-    const userInfo = {
-      id: 'temp-user-id',
-      nickname: '카카오 사용자',
-      profileImage: null,
-      email: null,
+        window.Kakao.API.request({
+          url: '/v2/user/me',
+          success: (res) => {
+            if (cancelled) return;
+            const userInfo = {
+              id: res.id,
+              nickname: res?.properties?.nickname,
+              profileImage: res?.properties?.profile_image,
+              email: res?.kakao_account?.email || null,
+            };
+            localStorage.setItem('kakao_user', JSON.stringify(userInfo));
+            if (typeof setAuthFromExternalLogin === 'function') {
+              setAuthFromExternalLogin(token, userInfo);
+            }
+            navigate('/', { replace: true });
+          },
+          fail: (apiError) => {
+            if (cancelled) return;
+            console.error('사용자 정보 가져오기 실패:', apiError);
+            setError('사용자 정보를 가져오지 못했습니다.');
+          },
+        });
+      })
+      .catch((e) => setError(e.message || '카카오 초기화 중 오류가 발생했습니다.'));
+
+    return () => {
+      cancelled = true;
     };
-
-    localStorage.setItem('kakao_user', JSON.stringify(userInfo));
-    
-    if (typeof setAuthFromExternalLogin === 'function') {
-      setAuthFromExternalLogin(token, userInfo);
-    }
-    
-    navigate('/', { replace: true });
-  }, [navigate, setAuthFromExternalLogin]);
+  }, [navigate, setError, setAuthFromExternalLogin]);
 
   return (
     <Container>

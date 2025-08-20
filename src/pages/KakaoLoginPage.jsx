@@ -67,7 +67,7 @@ const KakaoLoginPage = () => {
   const { setAuthFromExternalLogin } = useAuth();
 
   const handleKakaoLogin = useCallback(() => {
-    const restKey = import.meta.env.VITE_KAKAO_REST_KEY;
+    const restKey = import.meta?.env?.VITE_KAKAO_REST_KEY;
     const redirectUri = `${window.location.origin}/redirect`;
 
     if (restKey) {
