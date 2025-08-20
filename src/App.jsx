@@ -14,12 +14,13 @@ import PostDetailPage from './pages/PostDetailPage';
 import KakaoLoginPage from './pages/KakaoLoginPage';
 import Redirect from './pages/Redirect';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import ProfileCreatePage from './pages/ProfileCreatePage';
 import ChooseExpert from './pages/ChooseExpert';
+import UserTypeModal from './components/UserTypeModal';
 
 function AppContent() {
   const location = useLocation();
   const { isLoggedIn, isLoading, profile, isProfileLoaded } = useAuth();
+  const [showUserTypeModal, setShowUserTypeModal] = useState(false);
   
   const getHeaderTitle = () => {
     switch (location.pathname) {
@@ -33,14 +34,19 @@ function AppContent() {
         return '채팅';
       case '/my':
         return '마이페이지';
-      case '/profile-create':
-        return '프로필 생성';
       case '/choose-expert':
         return '전문가 선택';
       default:
         return '다독이다';
     }
   };
+
+  // Show user type modal when logged in but no profile
+  React.useEffect(() => {
+    if (isLoggedIn && isProfileLoaded && !profile && !showUserTypeModal) {
+      setShowUserTypeModal(true);
+    }
+  }, [isLoggedIn, isProfileLoaded, profile, showUserTypeModal]);
 
   return (
     <AppWrapper>
@@ -51,25 +57,19 @@ function AppContent() {
           <Route path="/my" element={<MyPage />} />
           <Route path="/bookshelf" element={<BookshelfPage />} />
           <Route path="/chat" element={<ChatPage />} />
-          <Route path="/chatting" element={<ChatPage />} />
           <Route path="/create-book" element={<CreateBookPage />} />
           <Route path="/post/:bookId" element={<PostDetailPage />} />
-          <Route path="/choose-expert" element={<ChooseExpert />} />
           <Route path="/kakao-login" element={<KakaoLoginPage />} />
           <Route path="/redirect" element={<Redirect />} />
-          <Route
-            path="/profile-create"
-            element={
-              (isLoading || !isProfileLoaded)
-                ? null
-                : (!isLoggedIn)
-                  ? <Navigate to="/kakao-login" replace />
-                  : (profile ? <Navigate to="/my" replace /> : <ProfileCreatePage />)
-            }
-          />
+          <Route path="/choose-expert" element={<ChooseExpert />} />
+          <Route path="/chatting" element={<ChatPage />} />
         </Routes>
       </MainLayout>
       <MenuBar />
+      <UserTypeModal 
+        isOpen={showUserTypeModal} 
+        onClose={() => setShowUserTypeModal(false)} 
+      />
     </AppWrapper>
   );
 }
