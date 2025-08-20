@@ -51,14 +51,14 @@ const MenuBarContainer = styled.nav`
   transform: translateX(-50%);
   width: 100%;
   max-width: 480px;
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  background: white;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
   display: flex;
   justify-content: space-around;
   align-items: center;
   padding: 12px 0 20px 0;
-  box-shadow: 0 -4px 20px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
   z-index: 1000;
 `;
 
@@ -72,27 +72,27 @@ const MenuItem = styled.div`
   border-radius: 12px;
   
   &:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 123, 255, 0.1);
     transform: translateY(-2px);
   }
 `;
 
 const IconWrapper = styled.div`
   position: relative;
-  color: ${props => props.$isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.7)'};
+  color: ${props => props.$isActive ? '#007bff' : '#6c757d'};
   margin-bottom: 4px;
   transition: all 0.3s ease;
   
   ${props => props.$isActive && `
     transform: scale(1.1);
-    color: #ffffff;
+    color: #007bff;
   `}
 `;
 
 const MenuLabel = styled.span`
   font-size: 12px;
   font-weight: ${props => props.$isActive ? '600' : '400'};
-  color: ${props => props.$isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.7)'};
+  color: ${props => props.$isActive ? '#007bff' : '#6c757d'};
   transition: all 0.3s ease;
 `;
 

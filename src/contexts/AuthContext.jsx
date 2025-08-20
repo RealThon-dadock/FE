@@ -147,6 +147,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateProfile = async (updatedProfileData) => {
+    try {
+      // 프로필 업데이트 (실제로는 API 호출)
+      localStorage.setItem('user_profile', JSON.stringify(updatedProfileData));
+      
+      // 프로필 상태 업데이트
+      setProfile(updatedProfileData);
+      
+      // 닉네임이 변경된 경우 user 정보도 업데이트
+      if (updatedProfileData.nickname && updatedProfileData.nickname !== user?.nickname) {
+        const updatedUser = { ...user, nickname: updatedProfileData.nickname };
+        setUser(updatedUser);
+        localStorage.setItem('kakao_user', JSON.stringify(updatedUser));
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('프로필 업데이트 실패:', error);
+      return false;
+    }
+  };
+
   const value = {
     isLoggedIn,
     user,
@@ -157,7 +179,8 @@ export const AuthProvider = ({ children }) => {
     logout,
     setAuthFromExternalLogin,
     setProfile,
-    refreshProfile
+    refreshProfile,
+    updateProfile
   };
 
   return (

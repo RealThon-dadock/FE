@@ -125,11 +125,11 @@ const BookSpine = styled.div`
 
 const BookTitle = styled.h3`
   margin: 0 0 8px 0;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
-  color: #ffffff;
+  color: #000000;
   line-height: 1.3;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
   position: relative;
   z-index: 1;
 `;
@@ -137,9 +137,9 @@ const BookTitle = styled.h3`
 const BookDate = styled.p`
   margin: 0;
   font-size: 12px;
-  color: #ffffff;
+  color: #000000;
   font-weight: 500;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
   position: relative;
   z-index: 1;
 `;
@@ -147,9 +147,9 @@ const BookDate = styled.p`
 const BookAuthor = styled.p`
   margin: 0 0 4px 0;
   font-size: 11px;
-  color: #ffffff;
+  color: #000000;
   font-weight: 400;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
   position: relative;
   z-index: 1;
   opacity: 0.9;
@@ -302,12 +302,18 @@ const BookshelfPage = () => {
   };
 
   const handleBookClick = (book) => {
-    if (book.isWriting) {
-      // 작성중인 책은 편집 페이지로 이동
-      navigate(`/create-book?edit=${book.id}`);
-    } else {
-      // 완결된 책은 포스트 상세 페이지로 이동
+    if (profile?.role === 'expert') {
+      // 전문가 모드일 때는 모든 책을 포스트 상세 페이지로 이동 (댓글 작성 가능)
       navigate(`/post/${book.id}`);
+    } else {
+      // 일반 유저 모드일 때는 기존 로직 유지
+      if (book.isWriting) {
+        // 작성중인 책은 편집 페이지로 이동
+        navigate(`/create-book?edit=${book.id}`);
+      } else {
+        // 완결된 책은 포스트 상세 페이지로 이동
+        navigate(`/post/${book.id}`);
+      }
     }
   };
 

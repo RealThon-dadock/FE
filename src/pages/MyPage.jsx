@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { getBookCounts, onBooksUpdate } from '../utils/bookData';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const MyPageContainer = styled.div`
   max-width: 480px;
@@ -117,6 +118,7 @@ const ContentWrapper = styled.div`
 
 const MyPage = () => {
   const { isLoggedIn, user, logout, profile } = useAuth();
+  const navigate = useNavigate();
   const [writingCount, setWritingCount] = useState(0);
   const [completedCount, setCompletedCount] = useState(0);
 
@@ -171,7 +173,7 @@ const MyPage = () => {
           </ProfileImage>
           <UserName>{isLoggedIn ? (user?.nickname || '사용자') : '게스트'}</UserName>
           {isLoggedIn && (
-            <EditProfileButton>
+            <EditProfileButton onClick={() => navigate('/profile-edit')}>
               내 정보 수정
             </EditProfileButton>
           )}

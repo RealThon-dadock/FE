@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { ArrowLeft, MoreVertical, Check } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Check, Send } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getWritingBooks, getCompletedBooks } from '../utils/bookData';
+import { useAuth } from '../contexts/AuthContext';
 
 const PostDetailContainer = styled.div`
   max-width: 480px;
@@ -111,7 +112,7 @@ const MenuItem = styled.button`
 
 const ContentArea = styled.div`
   padding: 20px;
-  padding-bottom: 100px;
+  padding-bottom: 100px; /* 메뉴 바 높이만큼 패딩 */
 `;
 
 const PostSection = styled.div`
@@ -243,11 +244,85 @@ const CommentText = styled.p`
   color: #495057;
 `;
 
+// 댓글 입력 관련 스타일
+const CommentInputSection = styled.div`
+  padding: 20px;
+  background-color: white;
+  border-top: 1px solid #e9ecef;
+  margin-top: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+`;
+
+const CommentInputContainer = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+`;
+
+const CommentTextarea = styled.textarea`
+  flex: 1;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.4;
+  resize: none;
+  min-height: 44px;
+  max-height: 120px;
+  font-family: inherit;
+  
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+  }
+`;
+
+const SendButton = styled.button`
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: #007bff;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: #0056b3;
+  }
+  
+  &:disabled {
+    background: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+  }
+`;
+
 const PostDetailPage = () => {
   const navigate = useNavigate();
   const { bookId } = useParams();
+  const { profile, user } = useAuth();
   const [book, setBook] = useState(null);
   const [showMenu, setShowMenu] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [comments, setComments] = useState([
+    {
+      id: 1,
+      author: '심리상담사 너구리',
+      date: new Date().toISOString(),
+      text: '안녕하세요, 심리상담사 너구리입니다. 고양이님께서 심리적압박감이 심하셨군요... 이러한 조언을 드리며 저러한 조언을 드립니다. 더 자세한 상담도 도와드릴게요 :)'
+    },
+    {
+      id: 2,
+      author: '심리상담사 너구리',
+      date: new Date().toISOString(),
+      text: '안녕하세요, 심리상담사 너구리입니다. 고양이님께서 심리적압박감이 심하셨군요... 이러한 조언을 드리며 저러한 조언을 드립니다. 더 자세한 상담도 도와드릴게요 :)'
+    }
+  ]);
 
   useEffect(() => {
     // URL에서 bookId를 가져와서 해당 책 정보를 찾기
@@ -298,6 +373,27 @@ const PostDetailPage = () => {
 
   const handleCloseMenu = () => {
     setShowMenu(false);
+  };
+
+  const handleCommentSubmit = (e) => {
+    e.preventDefault();
+    if (commentText.trim()) {
+      const newComment = {
+        id: Date.now(),
+        author: user?.nickname || '사용자',
+        date: new Date().toISOString(),
+        text: commentText.trim()
+      };
+      setComments([...comments, newComment]);
+      setCommentText('');
+    }
+  };
+
+  const handleTextareaChange = (e) => {
+    setCommentText(e.target.value);
+    // 자동 높이 조정
+    e.target.style.height = 'auto';
+    e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
   };
 
   if (!book) {
@@ -362,60 +458,53 @@ const PostDetailPage = () => {
           <PostContent>{book.content}</PostContent>
         </PostSection>
 
-        {book.isCompleted && (
-          <CommentsSection>
-            <CommentsTitle>전문가들의 댓글 6</CommentsTitle>
-            
-            <CommentItem>
+        {/* 댓글 섹션 - 모든 사용자에게 표시 */}
+        <CommentsSection>
+          <CommentsTitle>댓글 {comments.length}</CommentsTitle>
+          
+          {comments.map((comment) => (
+            <CommentItem key={comment.id}>
               <CommentProfileImage>
                 <VerifiedBadge>
                   <Check size={10} color="white" />
                 </VerifiedBadge>
               </CommentProfileImage>
               <CommentContent>
-                <CommentAuthor onClick={() => navigate('/choose-expert')}>심리상담사 너구리</CommentAuthor>
+                <CommentAuthor onClick={() => navigate('/choose-expert')}>{comment.author}</CommentAuthor>
                 <CommentDate>
-                  {book.completedAt 
-                    ? new Date(book.completedAt).toLocaleString('ko-KR', {
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })
-                    : `${book.date} 22:06`
-                  }
+                  {new Date(comment.date).toLocaleString('ko-KR', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
                 </CommentDate>
-                <CommentText>
-                  안녕하세요, 심리상담사 너구리입니다. 고양이님께서 심리적압박감이 심하셨군요... 이러한 조언을 드리며 저러한 조언을 드립니다. 더 자세한 상담도 도와드릴게요 :)
-                </CommentText>
+                <CommentText>{comment.text}</CommentText>
               </CommentContent>
             </CommentItem>
+          ))}
+        </CommentsSection>
 
-            <CommentItem>
-              <CommentProfileImage>
-                <VerifiedBadge>
-                  <Check size={10} color="white" />
-                </VerifiedBadge>
-              </CommentProfileImage>
-              <CommentContent>
-                <CommentAuthor onClick={() => navigate('/choose-expert')}>심리상담사 너구리</CommentAuthor>
-                <CommentDate>
-                  {book.completedAt 
-                    ? new Date(book.completedAt).toLocaleString('ko-KR', {
-                        month: '2-digit',
-                        day: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })
-                    : `${book.date} 22:06`
-                  }
-                </CommentDate>
-                <CommentText>
-                  안녕하세요, 심리상담사 너구리입니다. 고양이님께서 심리적압박감이 심하셨군요... 이러한 조언을 드리며 저러한 조언을 드립니다. 더 자세한 상담도 도와드릴게요 :)
-                </CommentText>
-              </CommentContent>
-            </CommentItem>
-          </CommentsSection>
+        {/* 댓글 입력 섹션 - 전문가만 표시 */}
+        {profile?.role === 'expert' && (
+          <CommentInputSection>
+            <form onSubmit={handleCommentSubmit}>
+              <CommentInputContainer>
+                <CommentTextarea
+                  value={commentText}
+                  onChange={handleTextareaChange}
+                  placeholder="댓글을 입력하세요..."
+                  rows={1}
+                />
+                <SendButton 
+                  type="submit" 
+                  disabled={!commentText.trim()}
+                >
+                  <Send size={20} />
+                </SendButton>
+              </CommentInputContainer>
+            </form>
+          </CommentInputSection>
         )}
       </ContentArea>
     </PostDetailContainer>

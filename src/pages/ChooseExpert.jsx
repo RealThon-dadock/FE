@@ -84,8 +84,29 @@ const Bullet = styled.li`
 `;
 
 const StartButton = styled.button`
-  width: 100%; margin-top: 24px; padding: 16px; border: none;
-  border-radius: 12px; background: #ced4da; color: #111827; font-weight: 700;
+  width: 100%; 
+  margin-top: 24px; 
+  padding: 16px; 
+  border: none;
+  border-radius: 12px; 
+  background: #f8f9fa; 
+  color: #495057; 
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #e9ecef;
+  
+  &:hover {
+    background: #e9ecef;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
 `;
 
 const ChooseExpert = () => {
