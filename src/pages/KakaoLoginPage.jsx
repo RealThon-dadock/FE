@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { ensureKakaoInitialized, getRedirectUri } from '../utils/kakao';
 
 const Container = styled.div`
   display: flex;
@@ -62,20 +61,14 @@ const SmallButton = styled.button`
 `;
 
 const KakaoLoginPage = () => {
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { setAuthFromExternalLogin } = useAuth();
 
-  useEffect(() => {
-    ensureKakaoInitialized()
-      .then(() => setReady(true))
-      .catch((e) => setError(e.message || '카카오 초기화 중 오류가 발생했습니다.'));
-  }, []);
-
   const handleKakaoLogin = useCallback(() => {
-    const redirectUri = getRedirectUri('/redirect');
-    const restKey = import.meta?.env?.VITE_KAKAO_REST_KEY;
+    const restKey = import.meta.env.VITE_KAKAO_REST_KEY;
+    const redirectUri = `${window.location.origin}/redirect`;
 
     if (restKey) {
       const params = new URLSearchParams({
@@ -88,11 +81,7 @@ const KakaoLoginPage = () => {
       return;
     }
 
-    if (!window.Kakao) return;
-    window.Kakao.Auth.authorize({
-      redirectUri,
-      scope: 'profile_nickname, account_email',
-    });
+    setError('카카오 REST API 키가 설정되지 않았습니다.');
   }, []);
 
   const handleMockLogin = useCallback(() => {
