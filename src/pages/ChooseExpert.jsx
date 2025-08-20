@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Bell } from 'lucide-react';
 
 const Page = styled.div`
@@ -111,6 +111,11 @@ const StartButton = styled.button`
 
 const ChooseExpert = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const postId = params.get('postId');
+  const postTitle = params.get('postTitle');
+  
   return (
     <Page>
       <Header>
@@ -139,7 +144,7 @@ const ChooseExpert = () => {
             </ul>
           </Card>
 
-          <StartButton onClick={() => navigate('/chatting')}>상담 시작</StartButton>
+          <StartButton onClick={() => navigate(`/chatting?postId=${postId}&name=${encodeURIComponent('심리상담가 너구리')}`)}>상담 시작</StartButton>
         </ProfileWrap>
       </Content>
     </Page>

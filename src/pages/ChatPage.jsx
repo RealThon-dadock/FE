@@ -4,6 +4,7 @@ import { ArrowLeft, Bell, Send } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import LoginRequired from '../components/LoginRequired';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { getWritingBooks, getCompletedBooks } from '../utils/bookData';
 
 const ChatContainer = styled.div`
   max-width: 480px;
@@ -63,7 +64,11 @@ const PostPreview = styled.div`
 `;
 
 const PostButton = styled.button`
-  width: 100%; margin-top: 10px; padding: 10px; border: none; border-radius: 8px; background: #dee2e6; color: #6c757d;
+  width: 100%; margin-top: 10px; padding: 10px; border: none; border-radius: 8px; background: #dee2e6; color: #6c757d; cursor: pointer; transition: all 0.2s ease;
+  
+  &:hover {
+    background: #ced4da;
+  }
 `;
 
 const InputBar = styled.form`
@@ -107,6 +112,21 @@ const ChatPage = () => {
   const expert = useMemo(() => ({
     name: params.get('name') || '심리상담가 너구리'
   }), [location.search]);
+  
+  // URL 파라미터에서 포스트 정보 가져오기
+  const postId = params.get('postId');
+  const [postData, setPostData] = useState(null);
+  
+  useEffect(() => {
+    if (postId) {
+      const writingBooks = getWritingBooks();
+      const completedBooks = getCompletedBooks();
+      const allBooks = [...writingBooks, ...completedBooks];
+      const foundPost = allBooks.find(book => book.id === parseInt(postId));
+      setPostData(foundPost);
+    }
+  }, [postId]);
+  
   const [messages, setMessages] = useState([
     { id: 'date', type: 'date', text: '2025년 8월 12일 화요일' },
     { id: 'post', type: 'post', title: '심리적압박감이 심해요', preview: '내용 .. 내용' },
@@ -114,6 +134,17 @@ const ChatPage = () => {
   ]);
   const [input, setInput] = useState('');
   const endRef = useRef(null);
+
+  // 포스트 데이터가 로드되면 메시지 업데이트
+  useEffect(() => {
+    if (postData) {
+      setMessages([
+        { id: 'date', type: 'date', text: '2025년 8월 12일 화요일' },
+        { id: 'post', type: 'post', title: postData.title, preview: postData.content },
+        { id: 'bot1', from: 'other', text: '안녕하세요, 너구리입니다!' }
+      ]);
+    }
+  }, [postData]);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages]);
 
@@ -155,9 +186,9 @@ const ChatPage = () => {
           if (m.type === 'date') return <DateLabel key={m.id}>{m.text}</DateLabel>;
           if (m.type === 'post') return (
             <PostPreview key={m.id}>
-              <div style={{ fontWeight: 700, color: '#495057', marginBottom: 6 }}>심리적압박감이 심해요</div>
-              <div>내용 .. 내용</div>
-              <PostButton>게시물 바로가기</PostButton>
+              <div style={{ fontWeight: 700, color: '#495057', marginBottom: 6 }}>{m.title}</div>
+              <div>{m.preview}</div>
+              <PostButton onClick={() => navigate(`/post/${postId || '1'}`)}>게시물 바로가기</PostButton>
             </PostPreview>
           );
           if (m.from === 'other') return (

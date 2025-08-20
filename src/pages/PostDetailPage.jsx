@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { ArrowLeft, MoreVertical, Check, Send } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Check, Send, ExternalLink } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { getWritingBooks, getCompletedBooks } from '../utils/bookData';
 import { useAuth } from '../contexts/AuthContext';
@@ -302,6 +302,27 @@ const SendButton = styled.button`
   }
 `;
 
+const GoToOriginalButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  color: #495057;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 16px;
+  
+  &:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+  }
+`;
+
 const PostDetailPage = () => {
   const navigate = useNavigate();
   const { bookId } = useParams();
@@ -371,6 +392,11 @@ const PostDetailPage = () => {
     }
   };
 
+  const handleGoToOriginal = () => {
+    // 원래 게시물로 이동 (현재 탭에서 이동)
+    navigate(`/post/${bookId}`);
+  };
+
   const handleCloseMenu = () => {
     setShowMenu(false);
   };
@@ -415,24 +441,27 @@ const PostDetailPage = () => {
           </BackButton>
           <HeaderTitle>포스트</HeaderTitle>
         </HeaderLeft>
-                 <HeaderRight>
-           <IconButton onClick={(e) => {
-             e.stopPropagation();
-             handleMenuClick();
-           }}>
-             <MoreVertical size={24} />
-             {showMenu && (
-               <MenuDropdown onClick={(e) => e.stopPropagation()}>
-                 <MenuItem onClick={handleEditBook}>
-                   수정하기
-                 </MenuItem>
-                 <MenuItem onClick={handleDeleteBook}>
-                   삭제하기
-                 </MenuItem>
-               </MenuDropdown>
-             )}
-           </IconButton>
-         </HeaderRight>
+        <HeaderRight>
+          {/* 전문가가 아닐 때만 수정/삭제 메뉴 표시 */}
+          {profile?.role !== 'expert' && (
+            <IconButton onClick={(e) => {
+              e.stopPropagation();
+              handleMenuClick();
+            }}>
+              <MoreVertical size={24} />
+              {showMenu && (
+                <MenuDropdown onClick={(e) => e.stopPropagation()}>
+                  <MenuItem onClick={handleEditBook}>
+                    수정하기
+                  </MenuItem>
+                  <MenuItem onClick={handleDeleteBook}>
+                    삭제하기
+                  </MenuItem>
+                </MenuDropdown>
+              )}
+            </IconButton>
+          )}
+        </HeaderRight>
       </Header>
 
       <ContentArea>
@@ -456,6 +485,14 @@ const PostDetailPage = () => {
           </PostHeader>
           <PostTitle>{book.title}</PostTitle>
           <PostContent>{book.content}</PostContent>
+          
+          {/* 전문가일 때만 게시물 바로가기 버튼 표시 */}
+          {profile?.role === 'expert' && (
+            <GoToOriginalButton onClick={handleGoToOriginal}>
+              <ExternalLink size={16} />
+              게시물 바로가기
+            </GoToOriginalButton>
+          )}
         </PostSection>
 
         {/* 댓글 섹션 - 모든 사용자에게 표시 */}
@@ -470,7 +507,7 @@ const PostDetailPage = () => {
                 </VerifiedBadge>
               </CommentProfileImage>
               <CommentContent>
-                <CommentAuthor onClick={() => navigate('/choose-expert')}>{comment.author}</CommentAuthor>
+                <CommentAuthor onClick={() => navigate(`/choose-expert?postId=${bookId}&postTitle=${encodeURIComponent(book.title)}`)}>{comment.author}</CommentAuthor>
                 <CommentDate>
                   {new Date(comment.date).toLocaleString('ko-KR', {
                     month: '2-digit',
