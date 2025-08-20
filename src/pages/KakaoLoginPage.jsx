@@ -66,23 +66,13 @@ const KakaoLoginPage = () => {
   const navigate = useNavigate();
   const { setAuthFromExternalLogin } = useAuth();
 
-  const handleKakaoLogin = useCallback(() => {
-    const restKey = import.meta?.env?.VITE_KAKAO_REST_KEY;
-    const redirectUri = `${window.location.origin}/redirect`;
+  const link = `https://kauth.kakao.com/oauth/authorize?client_id=${import.meta.env.VITE_REST_API_KEY}&redirect_uri=${
+    import.meta.env.VITE_REDIRECT_URI
+  }&response_type=code`;
 
-    if (restKey) {
-      const params = new URLSearchParams({
-        client_id: restKey,
-        redirect_uri: redirectUri,
-        response_type: 'token',
-        scope: 'profile_nickname account_email',
-      });
-      window.location.href = `https://kauth.kakao.com/oauth/authorize?${params.toString()}`;
-      return;
-    }
-
-    setError('카카오 REST API 키가 설정되지 않았습니다.');
-  }, []);
+  const loginHandler = () => {
+    window.location.href = link;
+  };
 
   const handleMockLogin = useCallback(() => {
     const mockUser = {
@@ -109,7 +99,7 @@ const KakaoLoginPage = () => {
       {error ? (
         <Message style={{ color: '#dc3545' }}>{error}</Message>
       ) : (
-        <KakaoButton onClick={handleKakaoLogin} disabled={!ready}>
+        <KakaoButton onClick={loginHandler} disabled={!ready}>
           카카오로 로그인하기
         </KakaoButton>
       )}
