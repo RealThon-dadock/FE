@@ -6,7 +6,12 @@ import {
   Lock,
   MoreVertical
 } from 'lucide-react';
-import bookImage from '../assets/image/book.png';
+import bookImage1 from '../assets/image/book1.png';
+import bookImage2 from '../assets/image/book2.png';
+import bookImage3 from '../assets/image/book3.png';
+import bookImage4 from '../assets/image/book4.png';
+import bookImage5 from '../assets/image/book5.png';
+import bookImage6 from '../assets/image/book6.png';
 import { 
   getWritingBooks, 
   getCompletedBooks, 
@@ -73,12 +78,12 @@ const BookGrid = styled.div`
 `;
 
 const BookCard = styled.div`
-  background-image: url(${bookImage});
+  background-image: url(${props => props.backgroundImage});
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   border-radius: 8px;
-  padding: 20px 16px 16px 20px;
+  padding: 20px 16px 16px 40px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   position: relative;
   cursor: pointer;
@@ -111,7 +116,7 @@ const BookSpine = styled.div`
   left: 0;
   top: 0;
   bottom: 0;
-  width: 6px;
+  width: 30px;
   background: linear-gradient(180deg, ${props => props.color || '#495057'} 0%, ${props => props.color || '#495057'}80 100%);
   border-top-left-radius: 8px;
   border-bottom-left-radius: 8px;
@@ -265,6 +270,15 @@ const BookshelfPage = () => {
   const [completedBooks, setCompletedBooks] = useState([]);
   const [openMenuId, setOpenMenuId] = useState(null);
 
+  // 책 표지 이미지 배열
+  const bookImages = [bookImage1, bookImage2, bookImage3, bookImage4, bookImage5, bookImage6];
+
+  // 랜덤 이미지 선택 함수
+  const getRandomBookImage = () => {
+    const randomIndex = Math.floor(Math.random() * bookImages.length);
+    return bookImages[randomIndex];
+  };
+
   // 책 데이터 로드
   useEffect(() => {
     const loadBooks = () => {
@@ -379,7 +393,11 @@ const BookshelfPage = () => {
         {currentBooks.length > 0 ? (
           <BookGrid>
             {currentBooks.map((book) => (
-              <BookCard key={book.id} onClick={() => handleBookClick(book)}>
+              <BookCard 
+                key={book.id} 
+                onClick={() => handleBookClick(book)}
+                backgroundImage={getRandomBookImage()}
+              >
                 <BookSpine color={book.color} />
                 <BookTitle>{book.title}</BookTitle>
                 <BookAuthor>{book.author || '사용자'}</BookAuthor>

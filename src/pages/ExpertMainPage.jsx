@@ -78,7 +78,7 @@ const CardSpine = styled.div`
   left: 0;
   top: 0;
   bottom: 0;
-  width: 6px;
+  width: 20px;
   background: linear-gradient(180deg, ${props => props.color || '#4ECDC4'} 0%, ${props => props.color || '#4ECDC4'}80 100%);
   border-top-left-radius: 12px;
   border-bottom-left-radius: 12px;
@@ -290,7 +290,7 @@ const ModalBookSpine = styled.div`
   left: 0;
   top: 0;
   bottom: 0;
-  width: 6px;
+  width: 20px;
   background: linear-gradient(180deg, ${props => props.color || '#4ECDC4'} 0%, ${props => props.color || '#4ECDC4'}80 100%);
   border-top-left-radius: 16px;
   border-bottom-left-radius: 16px;
