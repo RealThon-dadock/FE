@@ -155,9 +155,21 @@ export const AuthProvider = ({ children }) => {
       // 프로필 상태 업데이트
       setProfile(updatedProfileData);
       
-      // 닉네임이 변경된 경우 user 정보도 업데이트
+      // user 정보 업데이트 (닉네임과 프로필 이미지)
+      const updatedUser = { ...user };
+      let userUpdated = false;
+      
       if (updatedProfileData.nickname && updatedProfileData.nickname !== user?.nickname) {
-        const updatedUser = { ...user, nickname: updatedProfileData.nickname };
+        updatedUser.nickname = updatedProfileData.nickname;
+        userUpdated = true;
+      }
+      
+      if (updatedProfileData.profileImage && updatedProfileData.profileImage !== user?.profileImage) {
+        updatedUser.profileImage = updatedProfileData.profileImage;
+        userUpdated = true;
+      }
+      
+      if (userUpdated) {
         setUser(updatedUser);
         localStorage.setItem('kakao_user', JSON.stringify(updatedUser));
       }

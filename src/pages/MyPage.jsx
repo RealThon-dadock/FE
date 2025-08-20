@@ -35,6 +35,13 @@ const ProfileImage = styled.div`
   justify-content: center;
   color: #6c757d;
   font-size: 24px;
+  overflow: hidden;
+  
+  ${props => props.$imageUrl && `
+    background-image: url(${props.$imageUrl});
+    background-size: cover;
+    background-position: center;
+  `}
 `;
 
 const UserName = styled.h2`
@@ -168,8 +175,8 @@ const MyPage = () => {
     <MyPageContainer>
       <ContentWrapper>
         <ProfileSection>
-          <ProfileImage>
-            <User size={32} />
+          <ProfileImage $imageUrl={user?.profileImage}>
+            {!user?.profileImage && <User size={32} />}
           </ProfileImage>
           <UserName>{isLoggedIn ? (user?.nickname || '사용자') : '게스트'}</UserName>
           {isLoggedIn && (

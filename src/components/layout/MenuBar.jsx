@@ -2,13 +2,20 @@ import React from 'react';
 import styled from 'styled-components';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, BookOpen, MessageCircle, User } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 const MenuBar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { profile } = useAuth();
+
+  // 사용자 역할에 따라 홈 경로 결정
+  const getHomePath = () => {
+    return profile?.role === 'expert' ? '/expert' : '/';
+  };
 
   const menuItems = [
-    { path: '/', icon: Home, label: '홈' },
+    { path: getHomePath(), icon: Home, label: '홈' },
     { path: '/bookshelf', icon: BookOpen, label: '책장' },
     { path: '/chat', icon: MessageCircle, label: '채팅' },
     { path: '/my', icon: User, label: '마이' }
@@ -18,11 +25,19 @@ const MenuBar = () => {
     navigate(path);
   };
 
+  // 홈 메뉴의 활성 상태 확인 (일반 사용자: '/', 전문가: '/expert')
+  const isHomeActive = () => {
+    if (profile?.role === 'expert') {
+      return location.pathname === '/expert';
+    }
+    return location.pathname === '/';
+  };
+
   return (
     <MenuBarContainer>
       {menuItems.map((item) => {
         const Icon = item.icon;
-        const isActive = location.pathname === item.path;
+        const isActive = item.path === getHomePath() ? isHomeActive() : location.pathname === item.path;
         
         return (
           <MenuItem 
