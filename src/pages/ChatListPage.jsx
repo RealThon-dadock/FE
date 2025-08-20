@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import LoginRequired from '../components/LoginRequired';
 import { useNavigate } from 'react-router-dom';
 import { getWritingBooks, getCompletedBooks } from '../utils/bookData';
+import { getChatRooms } from '../utils/chatData';
 
 const ChatListContainer = styled.div`
   max-width: 480px;
@@ -55,7 +56,7 @@ const HeaderTitle = styled.h1`
 
 const Content = styled.div`
   padding: 20px;
-  padding-bottom: 100px;
+  padding-bottom: 120px;
 `;
 
 const EmptyState = styled.div`
@@ -181,29 +182,9 @@ const ChatListPage = () => {
   const [chatRooms, setChatRooms] = useState([]);
 
   useEffect(() => {
-    // 채팅방 데이터 로드 (실제로는 API에서 가져와야 함)
+    // 실제 채팅방 데이터 로드
     const loadChatRooms = () => {
-      const writingBooks = getWritingBooks();
-      const completedBooks = getCompletedBooks();
-      const allBooks = [...writingBooks, ...completedBooks];
-      
-      // 포스트 기반으로 채팅방 생성
-      const rooms = allBooks.map(book => ({
-        id: `chat_${book.id}`,
-        postId: book.id,
-        expertName: '심리상담가 너구리',
-        postTitle: book.title,
-        postContent: book.content,
-        lastMessage: '안녕하세요, 너구리입니다!',
-        lastMessageTime: new Date().toLocaleString('ko-KR', {
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
-        unreadCount: Math.floor(Math.random() * 3) // 임시 데이터
-      }));
-      
+      const rooms = getChatRooms();
       setChatRooms(rooms);
     };
 
@@ -274,7 +255,14 @@ const ChatListPage = () => {
                     <ExpertName>{room.expertName}</ExpertName>
                     <LastMessage>{room.lastMessage}</LastMessage>
                   </ChatRoomInfo>
-                  <ChatTime>{room.lastMessageTime}</ChatTime>
+                                     <ChatTime>
+                     {new Date(room.lastMessageTime).toLocaleString('ko-KR', {
+                       month: '2-digit',
+                       day: '2-digit',
+                       hour: '2-digit',
+                       minute: '2-digit'
+                     })}
+                   </ChatTime>
                 </ChatRoomHeader>
                 <PostPreview>
                   <PostTitle>{room.postTitle}</PostTitle>

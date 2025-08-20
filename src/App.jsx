@@ -21,6 +21,7 @@ import UserTypeModal from './components/UserTypeModal';
 import UserProfileEditPage from './pages/UserProfileEditPage';
 import ExpertProfileEditPage from './pages/ExpertProfileEditPage';
 
+
 function AppContent() {
   const location = useLocation();
   const { isLoggedIn, isLoading, profile, isProfileLoaded } = useAuth();
@@ -44,6 +45,7 @@ function AppContent() {
         return '다독이다';
       case '/profile-edit':
         return profile?.role === 'expert' ? '전문가 정보 수정' : '내 정보 수정';
+      
       default:
         return '다독이다';
     }
@@ -75,6 +77,7 @@ function AppContent() {
           <Route path="/profile-edit" element={
             profile?.role === 'expert' ? <ExpertProfileEditPage /> : <UserProfileEditPage />
           } />
+  
         </Routes>
       </MainLayout>
       <MenuBar />
