@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
+import { getCompletedBooks } from '../utils/bookData';
 import MainPageImg from '../assets/image/MainPageImg.png';
 
 const HomeContainer = styled.div`
@@ -14,7 +15,6 @@ const HomeContainer = styled.div`
 const ContentArea = styled.div`
   padding: 20px;
   padding-bottom: 100px;
-  padding-top: 20px;
 `;
 
 const HeroImage = styled.div`
@@ -23,10 +23,12 @@ const HeroImage = styled.div`
   background-image: url(${MainPageImg});
   background-size: cover;
   background-position: center;
-  background-repeat: no-repeat;
   border-radius: 12px;
   margin-bottom: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+`;
+
+const TodaySection = styled.section`
+  margin-bottom: 32px;
 `;
 
 const SectionTitle = styled.h2`
@@ -34,11 +36,6 @@ const SectionTitle = styled.h2`
   font-weight: 700;
   color: #212529;
   margin: 0 0 16px 0;
-`;
-
-// 오늘의 완결 BOOK UP 섹션
-const TodaySection = styled.section`
-  margin-bottom: 32px;
 `;
 
 const ScrollContainer = styled.div`
@@ -59,17 +56,29 @@ const HorizontalCardList = styled.div`
 
 const HorizontalCard = styled.div`
   min-width: 280px;
-  background: white;
+  background: linear-gradient(135deg, ${props => props.color || '#FFB3BA'} 0%, ${props => props.color || '#FFB3BA'}80 100%);
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: all 0.3s ease;
+  position: relative;
   
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    background: rgba(255, 255, 255, 0.3);
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
   }
 `;
 
@@ -78,40 +87,43 @@ const CardSpine = styled.div`
   left: 0;
   top: 0;
   bottom: 0;
-  width: 20px;
-  background: linear-gradient(180deg, ${props => props.color || '#4ECDC4'} 0%, ${props => props.color || '#4ECDC4'}80 100%);
+  width: 8px;
+  background: rgba(255, 255, 255, 0.3);
   border-top-left-radius: 12px;
   border-bottom-left-radius: 12px;
 `;
 
 const CardContent = styled.div`
-  margin-left: 12px;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 `;
 
 const CardTitle = styled.h3`
-  font-size: 16px;
-  font-weight: 600;
-  color: #212529;
   margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 700;
   line-height: 1.3;
 `;
 
 const CardSubtitle = styled.p`
+  margin: 0 0 12px 0;
   font-size: 14px;
-  color: #6c757d;
-  margin: 0 0 8px 0;
+  opacity: 0.9;
+  line-height: 1.4;
 `;
 
-const CardDate = styled.span`
+const CardDate = styled.p`
+  margin: 0 0 8px 0;
   font-size: 12px;
-  color: #adb5bd;
+  font-weight: 500;
+  opacity: 0.8;
 `;
 
 const CardDescription = styled.p`
+  margin: 0;
   font-size: 12px;
-  color: #6c757d;
-  margin: 8px 0 0 0;
-  line-height: 1.4;
+  opacity: 0.7;
+  font-style: italic;
 `;
 
 const DotIndicator = styled.div`
@@ -125,11 +137,10 @@ const Dot = styled.div`
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: ${props => props.active ? '#007bff' : '#dee2e6'};
-  transition: background-color 0.2s ease;
+  background-color: ${props => props.active ? '#212529' : '#dee2e6'};
+  transition: all 0.2s ease;
 `;
 
-// 고민은 이제 저 멀리 섹션
 const WorrySection = styled.section`
   margin-bottom: 32px;
 `;
@@ -141,44 +152,58 @@ const BookGrid = styled.div`
 `;
 
 const BookCard = styled.div`
-  background: white;
+  background: linear-gradient(135deg, ${props => props.color || '#FFB3BA'} 0%, ${props => props.color || '#FFB3BA'}80 100%);
   border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: all 0.3s ease;
+  position: relative;
   
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    background: rgba(255, 255, 255, 0.3);
+    border-top-left-radius: 12px;
+    border-bottom-left-radius: 12px;
   }
 `;
 
 const BookContent = styled.div`
-  margin-top: 8px;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 `;
 
 const BookTitle = styled.h3`
-  font-size: 14px;
-  font-weight: 600;
-  color: #212529;
-  margin: 0 0 6px 0;
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  font-weight: 700;
   line-height: 1.3;
 `;
 
 const BookSubtitle = styled.p`
+  margin: 0 0 8px 0;
   font-size: 12px;
-  color: #6c757d;
-  margin: 0 0 6px 0;
+  opacity: 0.9;
+  line-height: 1.4;
 `;
 
-const BookDate = styled.span`
+const BookDate = styled.p`
+  margin: 0;
   font-size: 11px;
-  color: #adb5bd;
+  font-weight: 500;
+  opacity: 0.8;
 `;
 
-// 책 상세 모달 스타일
 const ModalOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -189,19 +214,19 @@ const ModalOverlay = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
-  padding: 20px;
+  z-index: 1000;
 `;
 
 const ModalContent = styled.div`
   background-color: white;
   border-radius: 16px;
-  padding: 24px;
+  margin: 20px;
   max-width: 400px;
   width: 100%;
   max-height: 80vh;
   overflow-y: auto;
   position: relative;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
 `;
 
 const ModalCloseButton = styled.button`
@@ -213,11 +238,10 @@ const ModalCloseButton = styled.button`
   font-size: 24px;
   cursor: pointer;
   color: #6c757d;
-  padding: 4px;
-  border-radius: 4px;
+  z-index: 1;
   
   &:hover {
-    background-color: #f8f9fa;
+    color: #212529;
   }
 `;
 
@@ -226,167 +250,106 @@ const ModalBookSpine = styled.div`
   left: 0;
   top: 0;
   bottom: 0;
-  width: 20px;
-  background: linear-gradient(180deg, ${props => props.color || '#4ECDC4'} 0%, ${props => props.color || '#4ECDC4'}80 100%);
+  width: 12px;
+  background: linear-gradient(180deg, ${props => props.color || '#495057'} 0%, ${props => props.color || '#495057'}80 100%);
   border-top-left-radius: 16px;
   border-bottom-left-radius: 16px;
 `;
 
 const ModalBookContent = styled.div`
-  margin-left: 16px;
+  padding: 24px 24px 24px 36px;
 `;
 
 const ModalBookTitle = styled.h2`
+  margin: 0 0 12px 0;
   font-size: 20px;
   font-weight: 700;
   color: #212529;
-  margin: 0 0 8px 0;
   line-height: 1.3;
 `;
 
 const ModalBookSubtitle = styled.p`
+  margin: 0 0 16px 0;
   font-size: 16px;
   color: #6c757d;
-  margin: 0 0 12px 0;
+  line-height: 1.5;
 `;
 
-const ModalBookDate = styled.span`
+const ModalBookDate = styled.p`
+  margin: 0 0 20px 0;
   font-size: 14px;
-  color: #adb5bd;
-  margin-bottom: 20px;
-  display: block;
+  color: #6c757d;
+  font-weight: 500;
 `;
 
 const ModalBookText = styled.p`
+  margin: 0;
   font-size: 16px;
   line-height: 1.6;
   color: #495057;
-  margin: 0;
-  white-space: pre-line;
+  white-space: pre-wrap;
+`;
+
+const LoadingText = styled.div`
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+  font-size: 16px;
 `;
 
 const HomePage = () => {
   const navigate = useNavigate();
   const scrollRef = useRef(null);
   const [activeDot, setActiveDot] = useState(0);
+  const [todayBooks, setTodayBooks] = useState([]);
   const [displayedWorryBooks, setDisplayedWorryBooks] = useState([]);
   const [selectedBook, setSelectedBook] = useState(null);
   const [showBookModal, setShowBookModal] = useState(false);
 
-  // 오늘의 완결 BOOK UP 데이터
-  const todayBooks = [
-    {
-      id: 1,
-      title: '고양이님의 고민',
-      subtitle: '회사 생활이 힘들어요',
-      date: '23. 8. 3',
-      description: '심리적 성찰로 너구리님이 해결해주셨어요!',
-      color: '#4ECDC4',
-      content: '안녕하세요, 고양이입니다. 요즘 회사에서 일이 너무 많아서 스트레스가 심해요. 특히 상사님께서 항상 까다롭게 구시고, 동료들과도 소통이 잘 안 돼요. 매일 밤늦게까지 일하고 집에 가면 너무 지쳐서 아무것도 할 수 없어요. 이런 상황을 어떻게 해결해야 할지 모르겠어요. 너구리님께서 조언해주셔서 정말 감사합니다. 이제 조금씩 여유를 가지고 일할 수 있게 되었어요.'
-    },
-    {
-      id: 2,
-      title: '강아지님의 고민',
-      subtitle: '대인관계가 어려워요',
-      date: '23. 8. 2',
-      description: '소통의 기술로 해결책을 찾았어요!',
-      color: '#FF6B6B',
-      content: '안녕하세요, 강아지입니다. 저는 사람들과 대화할 때 항상 긴장하고 어색해요. 특히 처음 만나는 사람 앞에서는 말을 제대로 못하고, 대화가 자연스럽게 이어지지 않아요. 친구들도 제가 너무 수줍어한다고 하는데, 어떻게 하면 더 자연스럽게 대화할 수 있을까요? 너구리님의 조언 덕분에 이제 조금씩 자신감을 가지고 대화할 수 있게 되었어요.'
-    },
-    {
-      id: 3,
-      title: '토끼님의 고민',
-      subtitle: '자신감이 부족해요',
-      date: '23. 8. 1',
-      description: '자기계발로 새로운 변화를 시작했어요!',
-      color: '#45B7D1',
-      content: '안녕하세요, 토끼입니다. 저는 항상 자신이 없어요. 뭔가를 해도 잘할 수 있을까 하는 생각이 먼저 들고, 실패할까봐 두려워서 도전을 못해요. 특히 중요한 일이나 새로운 일을 할 때는 더욱 그렇습니다. 어떻게 하면 자신감을 가질 수 있을까요? 너구리님의 도움으로 이제 조금씩 자신감을 찾고 있어요. 새로운 것에 도전하는 용기도 생겼어요.'
-    }
-  ];
-
-  // 고민은 이제 저 멀리 데이터 (더 많은 책들)
-  const allWorryBooks = [
-    {
-      id: 1,
-      title: '고양이님의 고민',
-      subtitle: '회사 생활이 힘들어요',
-      date: '23. 8. 3',
-      content: '안녕하세요, 고양이입니다. 요즘 회사에서 일이 너무 많아서 스트레스가 심해요. 특히 상사님께서 항상 까다롭게 구시고, 동료들과도 소통이 잘 안 돼요. 매일 밤늦게까지 일하고 집에 가면 너무 지쳐서 아무것도 할 수 없어요. 이런 상황을 어떻게 해결해야 할지 모르겠어요.'
-    },
-    {
-      id: 2,
-      title: '강아지님의 고민',
-      subtitle: '대인관계가 어려워요',
-      date: '23. 8. 2',
-      content: '안녕하세요, 강아지입니다. 저는 사람들과 대화할 때 항상 긴장하고 어색해요. 특히 처음 만나는 사람 앞에서는 말을 제대로 못하고, 대화가 자연스럽게 이어지지 않아요. 친구들도 제가 너무 수줍어한다고 하는데, 어떻게 하면 더 자연스럽게 대화할 수 있을까요?'
-    },
-    {
-      id: 3,
-      title: '토끼님의 고민',
-      subtitle: '자신감이 부족해요',
-      date: '23. 8. 1',
-      content: '안녕하세요, 토끼입니다. 저는 항상 자신이 없어요. 뭔가를 해도 잘할 수 있을까 하는 생각이 먼저 들고, 실패할까봐 두려워서 도전을 못해요. 특히 중요한 일이나 새로운 일을 할 때는 더욱 그렇습니다. 어떻게 하면 자신감을 가질 수 있을까요?'
-    },
-    {
-      id: 4,
-      title: '펭귄님의 고민',
-      subtitle: '스트레스 관리가 어려워요',
-      date: '23. 7. 30',
-      content: '안녕하세요, 펭귄입니다. 요즘 스트레스가 너무 많아서 어떻게 해야 할지 모르겠어요. 일도 많고, 개인적인 문제도 있어서 마음이 복잡해요. 스트레스를 어떻게 관리해야 할지 조언을 구하고 싶어요.'
-    },
-    {
-      id: 5,
-      title: '사자님의 고민',
-      subtitle: '리더십 발휘가 어려워요',
-      date: '23. 7. 29',
-      content: '안녕하세요, 사자입니다. 팀장이 되었는데 리더십을 어떻게 발휘해야 할지 모르겠어요. 팀원들과의 관계도 어렵고, 업무 지시도 제대로 못하고 있어요. 좋은 리더가 되고 싶은데 어떻게 해야 할까요?'
-    },
-    {
-      id: 6,
-      title: '코알라님의 고민',
-      subtitle: '수면 패턴이 불규칙해요',
-      date: '23. 7. 28',
-      content: '안녕하세요, 코알라입니다. 요즘 잠을 제대로 못 자고 있어요. 밤에 잠이 안 오고, 아침에 일어나기도 힘들어요. 수면 패턴을 어떻게 조정해야 할지 조언을 구하고 싶어요.'
-    },
-    {
-      id: 7,
-      title: '기린님의 고민',
-      subtitle: '목이 길어서 불편해요',
-      date: '23. 7. 27',
-      content: '안녕하세요, 기린입니다. 목이 너무 길어서 일상생활이 불편해요. 옷도 맞는 게 없고, 차도 타기 어려워요. 이런 외모적 특징을 어떻게 받아들여야 할지 고민이에요.'
-    },
-    {
-      id: 8,
-      title: '코뿔소님의 고민',
-      subtitle: '외모에 대한 스트레스가 있어요',
-      date: '23. 7. 26',
-      content: '안녕하세요, 코뿔소입니다. 외모 때문에 스트레스를 받고 있어요. 사람들이 저를 보면 놀라고, 때로는 무시하기도 해요. 외모에 대한 스트레스를 어떻게 해결해야 할까요?'
-    },
-    {
-      id: 9,
-      title: '하마님의 고민',
-      subtitle: '체중 관리가 어려워요',
-      date: '23. 7. 25',
-      content: '안녕하세요, 하마입니다. 체중 관리가 너무 어려워요. 다이어트를 해도 금방 포기하고, 운동도 꾸준히 못하고 있어요. 건강한 체중 관리를 어떻게 해야 할지 조언을 구하고 싶어요.'
-    },
-    {
-      id: 10,
-      title: '악어님의 고민',
-      subtitle: '감정 표현이 어려워요',
-      date: '23. 7. 24',
-      content: '안녕하세요, 악어입니다. 감정을 표현하는 것이 너무 어려워요. 기쁘거나 슬플 때도 표정 변화가 없고, 다른 사람들이 제 감정을 이해하지 못해요. 어떻게 감정을 표현해야 할까요?'
-    }
-  ];
-
-  // 랜덤으로 4개의 책을 선택하는 함수
-  const getRandomBooks = () => {
-    const shuffled = [...allWorryBooks].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 4);
+  // 랜덤으로 책을 선택하는 함수
+  const getRandomBooks = (books, count) => {
+    const shuffled = [...books].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, count);
   };
 
-  // 컴포넌트 마운트 시 랜덤 책들 설정
+  // 책 데이터 로드
   useEffect(() => {
-    setDisplayedWorryBooks(getRandomBooks());
+    const loadBooks = () => {
+      const allCompletedBooks = getCompletedBooks();
+      
+      // 완결된 공개 책들만 필터링 (visibility가 PUBLIC이거나 isLocked가 false인 것들)
+      const publicCompletedBooks = allCompletedBooks.filter(book => 
+        book.visibility === 'PUBLIC' || !book.isLocked
+      );
+
+      // 오늘의 완결 BOOK UP (3개)
+      const todayBooksData = getRandomBooks(publicCompletedBooks, 3).map(book => ({
+        ...book,
+        date: book.completedAt 
+          ? new Date(book.completedAt).toLocaleDateString('ko-KR', {
+              month: '2-digit',
+              day: '2-digit'
+            })
+          : book.date,
+        description: '전문가와의 상담으로 해결되었어요!'
+      }));
+
+      // 고민은 이제 저 멀리 (4개)
+      const worryBooksData = getRandomBooks(publicCompletedBooks, 4).map(book => ({
+        ...book,
+        date: book.completedAt 
+          ? new Date(book.completedAt).toLocaleDateString('ko-KR', {
+              month: '2-digit',
+              day: '2-digit'
+            })
+          : book.date
+      }));
+
+      setTodayBooks(todayBooksData);
+      setDisplayedWorryBooks(worryBooksData);
+    };
+
+    loadBooks();
   }, []);
 
   const handleScroll = (e) => {
@@ -416,42 +379,60 @@ const HomePage = () => {
         {/* 오늘의 완결 BOOK UP 섹션 */}
         <TodaySection>
           <SectionTitle>오늘의 완결 BOOK UP!</SectionTitle>
-          <ScrollContainer>
-            <HorizontalCardList ref={scrollRef} onScroll={handleScroll}>
-              {todayBooks.map((book) => (
-                <HorizontalCard key={book.id} onClick={() => handleCardClick(book)}>
-                  <CardSpine color={book.color} />
-                  <CardContent>
-                    <CardTitle>{book.title}</CardTitle>
-                    <CardSubtitle>{book.subtitle}</CardSubtitle>
-                    <CardDate>{book.date}</CardDate>
-                    <CardDescription>{book.description}</CardDescription>
-                  </CardContent>
-                </HorizontalCard>
-              ))}
-            </HorizontalCardList>
-          </ScrollContainer>
-          <DotIndicator>
-            {todayBooks.map((_, index) => (
-              <Dot key={index} active={index === activeDot} />
-            ))}
-          </DotIndicator>
+          {todayBooks.length > 0 ? (
+            <>
+              <ScrollContainer>
+                <HorizontalCardList ref={scrollRef} onScroll={handleScroll}>
+                  {todayBooks.map((book) => (
+                    <HorizontalCard 
+                      key={book.id} 
+                      onClick={() => handleCardClick(book)}
+                      color={book.color}
+                    >
+                      <CardSpine color={book.color} />
+                      <CardContent>
+                        <CardTitle>{book.title}</CardTitle>
+                        <CardSubtitle>{book.content.substring(0, 30)}...</CardSubtitle>
+                        <CardDate>{book.date}</CardDate>
+                        <CardDescription>{book.description}</CardDescription>
+                      </CardContent>
+                    </HorizontalCard>
+                  ))}
+                </HorizontalCardList>
+              </ScrollContainer>
+              <DotIndicator>
+                {todayBooks.map((_, index) => (
+                  <Dot key={index} active={index === activeDot} />
+                ))}
+              </DotIndicator>
+            </>
+          ) : (
+            <LoadingText>완결된 책이 없습니다.</LoadingText>
+          )}
         </TodaySection>
 
         {/* 고민은 이제 저 멀리 섹션 */}
         <WorrySection>
           <SectionTitle>고민은 이제 저 멀리,</SectionTitle>
-          <BookGrid>
-            {displayedWorryBooks.map((book) => (
-              <BookCard key={book.id} onClick={() => handleCardClick(book)}>
-                <BookContent>
-                  <BookTitle>{book.title}</BookTitle>
-                  <BookSubtitle>{book.subtitle}</BookSubtitle>
-                  <BookDate>{book.date}</BookDate>
-                </BookContent>
-              </BookCard>
-            ))}
-          </BookGrid>
+          {displayedWorryBooks.length > 0 ? (
+            <BookGrid>
+              {displayedWorryBooks.map((book) => (
+                <BookCard 
+                  key={book.id} 
+                  onClick={() => handleCardClick(book)}
+                  color={book.color}
+                >
+                  <BookContent>
+                    <BookTitle>{book.title}</BookTitle>
+                    <BookSubtitle>{book.content.substring(0, 20)}...</BookSubtitle>
+                    <BookDate>{book.date}</BookDate>
+                  </BookContent>
+                </BookCard>
+              ))}
+            </BookGrid>
+          ) : (
+            <LoadingText>완결된 책이 없습니다.</LoadingText>
+          )}
         </WorrySection>
       </ContentArea>
 
@@ -463,7 +444,7 @@ const HomePage = () => {
             <ModalBookSpine color={selectedBook.color} />
             <ModalBookContent>
               <ModalBookTitle>{selectedBook.title}</ModalBookTitle>
-              <ModalBookSubtitle>{selectedBook.subtitle}</ModalBookSubtitle>
+              <ModalBookSubtitle>{selectedBook.content.substring(0, 50)}...</ModalBookSubtitle>
               <ModalBookDate>{selectedBook.date}</ModalBookDate>
               <ModalBookText>{selectedBook.content}</ModalBookText>
             </ModalBookContent>

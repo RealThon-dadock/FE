@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Plus,
   Lock,
-  MoreVertical
+  MoreVertical,
+  X
 } from 'lucide-react';
 import bookImage1 from '../assets/image/book1.png';
 import bookImage2 from '../assets/image/book2.png';
@@ -17,8 +18,7 @@ import {
   getCompletedBooks, 
   onBooksUpdate,
   deleteWritingBook,
-  deleteCompletedBook,
-  moveToCompleted
+  deleteCompletedBook
 } from '../utils/bookData';
 import { useAuth } from '../contexts/AuthContext';
 import LoginRequired from '../components/LoginRequired';
@@ -218,13 +218,11 @@ const MenuItem = styled.button`
   }
 `;
 
-
-
 const FloatingActionButton = styled.button`
   position: fixed;
   bottom: 100px;
   right: 50%;
-  transform: translateX(200px); /* 480px 컨테이너의 오른쪽에서 20px 안쪽 */
+  transform: translateX(200px);
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -282,8 +280,11 @@ const BookshelfPage = () => {
   // 책 데이터 로드
   useEffect(() => {
     const loadBooks = () => {
-      setWritingBooks(getWritingBooks());
-      setCompletedBooks(getCompletedBooks());
+      const writing = getWritingBooks();
+      const completed = getCompletedBooks();
+      
+      setWritingBooks(writing);
+      setCompletedBooks(completed);
     };
 
     // 초기 데이터 로드
@@ -291,7 +292,7 @@ const BookshelfPage = () => {
 
     // 이벤트 리스너 등록
     const cleanup = onBooksUpdate(() => {
-      setCompletedBooks(getCompletedBooks());
+      loadBooks();
     });
 
     return cleanup;
@@ -302,19 +303,8 @@ const BookshelfPage = () => {
   };
 
   const handleBookClick = (book) => {
-    if (profile?.role === 'expert') {
-      // 전문가 모드일 때는 모든 책을 포스트 상세 페이지로 이동 (댓글 작성 가능)
-      navigate(`/post/${book.id}`);
-    } else {
-      // 일반 유저 모드일 때는 기존 로직 유지
-      if (book.isWriting) {
-        // 작성중인 책은 편집 페이지로 이동
-        navigate(`/create-book?edit=${book.id}`);
-      } else {
-        // 완결된 책은 포스트 상세 페이지로 이동
-        navigate(`/post/${book.id}`);
-      }
-    }
+    // 모든 책을 PostDetailPage로 이동
+    navigate(`/post/${book.id}`);
   };
 
   const handleMenuClick = (e, bookId) => {
@@ -331,20 +321,16 @@ const BookshelfPage = () => {
     if (window.confirm('정말 삭제하시겠습니까?')) {
       if (book.isWriting) {
         deleteWritingBook(book.id);
-        setWritingBooks(getWritingBooks());
       } else {
         deleteCompletedBook(book.id);
-        setCompletedBooks(getCompletedBooks());
       }
-      setOpenMenuId(null);
-    }
-  };
-
-  const handleCompleteBook = (book) => {
-    if (window.confirm('이 책을 완결하시겠습니까?')) {
-      moveToCompleted(book.id);
-      setWritingBooks(getWritingBooks());
-      setCompletedBooks(getCompletedBooks());
+      
+      // 데이터 다시 로드
+      const writing = getWritingBooks();
+      const completed = getCompletedBooks();
+      
+      setWritingBooks(writing);
+      setCompletedBooks(completed);
       setOpenMenuId(null);
     }
   };
@@ -379,7 +365,6 @@ const BookshelfPage = () => {
 
   return (
     <BookshelfContainer>
-
       <TabContainer>
         <Tab 
           active={activeTab === 'writing'} 
@@ -416,12 +401,30 @@ const BookshelfPage = () => {
                     : book.date
                   }
                 </BookDate>
-                {book.isLocked && (
+                {book.visibility === 'PRIVATE' && (
                   <LockIcon>
                     <Lock size={16} />
                   </LockIcon>
                 )}
-                {/* 작성중인 책에는 메뉴 버튼 제거 */}
+                
+                {/* 작성중인 책에만 메뉴 버튼 표시 */}
+                {activeTab === 'writing' && profile?.role !== 'expert' && (
+                  <>
+                    <MenuButton onClick={(e) => handleMenuClick(e, book.id)}>
+                      <MoreVertical size={16} />
+                    </MenuButton>
+                    {openMenuId === book.id && (
+                      <MenuDropdown>
+                        <MenuItem onClick={() => handleEditBook(book)}>
+                          수정하기
+                        </MenuItem>
+                        <MenuItem onClick={() => handleDeleteBook(book)}>
+                          삭제하기
+                        </MenuItem>
+                      </MenuDropdown>
+                    )}
+                  </>
+                )}
               </BookCard>
             ))}
           </BookGrid>
