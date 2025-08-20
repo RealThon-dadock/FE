@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
 
 const Container = styled.div`
   display: flex;
@@ -27,59 +27,52 @@ const Message = styled.p`
   line-height: 1.5;
 `;
 
-function parseAccessTokenFromHash(hashString) {
-  if (!hashString) return null;
-  const params = new URLSearchParams(hashString.replace(/^#/, ''));
-  return params.get('access_token');
-}
-
 const Redirect = () => {
+  const code = new URL(document.location.toString()).searchParams.get('code');
   const navigate = useNavigate();
-  const { setAuthFromExternalLogin } = useAuth();
   const [error, setError] = useState('');
 
   useEffect(() => {
-    let cancelled = false;
-    ensureKakaoInitialized()
-      .then(() => {
-        const token = parseAccessTokenFromHash(window.location.hash);
-        if (!token) {
-          setError('엑세스 토큰을 찾을 수 없습니다.');
-          return;
-        }
+    console.log('현재 URL:', window.location.href);
+    console.log('VITE_REDIRECT_URI:', import.meta.env.VITE_REDIRECT_URI);
+    console.log('인가코드:', code);
 
-        window.Kakao.Auth.setAccessToken(token);
-        localStorage.setItem('kakao_token', token);
+    // 인가코드가 없으면 에러 처리
+    if (!code) {
+      console.error('인가코드를 찾을 수 없습니다.');
+      setError('인가코드를 찾을 수 없습니다. 다시 로그인해주세요.');
+      return;
+    }
 
-        window.Kakao.API.request({
-          url: '/v2/user/me',
-          success: (res) => {
-            if (cancelled) return;
-            const userInfo = {
-              id: res.id,
-              nickname: res?.properties?.nickname,
-              profileImage: res?.properties?.profile_image,
-              email: res?.kakao_account?.email || null,
-            };
-            localStorage.setItem('kakao_user', JSON.stringify(userInfo));
-            if (typeof setAuthFromExternalLogin === 'function') {
-              setAuthFromExternalLogin(token, userInfo);
-            }
-            navigate('/', { replace: true });
-          },
-          fail: (apiError) => {
-            if (cancelled) return;
-            console.error('사용자 정보 가져오기 실패:', apiError);
-            setError('사용자 정보를 가져오지 못했습니다.');
-          },
-        });
+    // 백엔드 URL이 없으면 에러 처리
+    if (!import.meta.env.VITE_BACKEND_URL) {
+      console.error('백엔드 URL이 설정되지 않았습니다.');
+      setError('서버 설정 오류입니다.');
+      return;
+    }
+
+    axios
+      .post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/kakao/login`, {
+        code: code, // 🔥 여기! body에 담아 보냄
       })
-      .catch((e) => setError(e.message || '카카오 초기화 중 오류가 발생했습니다.'));
+      .then((r) => {
+        console.log('성공');
+        console.log(r);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [navigate, setError, setAuthFromExternalLogin]);
+        // 토큰 저장
+        localStorage.setItem('accessToken', r.data.data.token.accessToken);
+        localStorage.setItem('userEmail', r.data.userEmail);
+        localStorage.setItem('id', r.data.data.id);
+        localStorage.setItem('name', r.data.data.name);
+        console.log('로컬스토리지 저장 완료');
+
+        navigate('/');
+      })
+      .catch((err) => {
+        console.error('로그인 실패', err.response || err);
+        setError('로그인 처리에 실패했습니다.');
+      });
+  }, [navigate, code]);
 
   return (
     <Container>
