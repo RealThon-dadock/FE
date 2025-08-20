@@ -16,6 +16,7 @@ export async function getMyProfile() {
 }
 
 export async function createMyProfile(payload) {
+  // payload can be { role } or { name, birth, email, role }
   const data = await apiFetch(PROFILE_CREATE_PATH, { method: 'POST', body: payload });
   return data;
 }
